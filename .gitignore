@@ -1,2 +1,7 @@
 out/
 *.swp
+
+.idea/*
+.idea/libraries/lib.xml
+
+.idea/libraries/lib.xml
