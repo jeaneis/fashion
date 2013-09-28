@@ -1,0 +1,43 @@
+<html>
+<head>
+<script src="http://yui.yahooapis.com/3.12.0/build/yui/yui-min.js"></script>
+<script>
+// Create a YUI sandbox on your page.
+YUI().use('node', 'event', function (Y) {
+  // The Node and Event modules are loaded and ready to use.
+  // Your code goes here!
+});
+YUI().use("io-xdr", "json-parse", "node", function(Y) {
+  var handleStart = function(id, a) { };
+  var handleSuccess = function(id, o, a) {
+    Y.log("SUCCESS!");
+    Y.log(o);
+    var messages = Y.JSON.parse(o.responseText);
+    Y.log(messages);
+  };
+  var handleFailure = function(id, o, a) {
+    Y.log("FAILURE!");
+    Y.log(id);
+    Y.log(o);
+    Y.log(a);
+  };
+  var cfg = {
+      method: "GET",
+      on: {
+        start: handleStart,
+        success: handleSuccess,
+        failure: handleFailure
+      }
+    };
+  var obj = Y.io(
+      //this is a specific Pipes feed, populated with cycling news:
+      "http://localhost:4242/ping",
+      cfg
+    );
+});
+</script>
+</head>
+<body>
+Hello Yahoo!
+</body>
+</html>
