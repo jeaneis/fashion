@@ -1,4 +1,4 @@
-package digicloset;
+package digicloset.handlers;
 
 import com.google.gson.*;
 

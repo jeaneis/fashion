@@ -3,6 +3,7 @@ package digicloset;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValue;
+import digicloset.handlers.PingRequestHandler;
 import edu.stanford.nlp.util.Execution;
 import edu.stanford.nlp.util.Execution.Option;
 import edu.stanford.nlp.util.Function;
@@ -40,8 +41,13 @@ public class Props {
   @Option(name="server.port", gloss="The port to listen to requests from")
   public static int SERVER_PORT  = 4242;
 
+  @Option(name="data.info.dir", gloss="The directory with the info files")
+  public static File DATA_INFO_DIR  = new File("/home/gabor/workspace/fashion/data/info");
+
   private static void initializeAndValidate() {
-    /* nothing yet */
+    if (!DATA_INFO_DIR.exists() || !DATA_INFO_DIR.isDirectory()) {
+      throw new IllegalStateException("Could not find fashion item info at " + DATA_INFO_DIR);
+    }
   }
 
   public static void exec(final Function<Properties, Object> toRun, String[] args) {
