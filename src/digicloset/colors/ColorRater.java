@@ -40,10 +40,11 @@ public class ColorRater {
 
     }
 
-    public static double RateColors(ArrayList<FashionItem> items)
+    public static double RateColors(ArrayList<FashionItem> items, FlickrImages favorites)
     {
         double score = -10000;
         String userAgent = "";
+        double favoritesScore = 0;
 
         try
         {
@@ -102,12 +103,15 @@ public class ColorRater {
             String responseString = response.toString();
             String[] fields = responseString.split(":");
             score = Double.parseDouble(fields[1].replace("}",""));
+            favoritesScore = favorites.Score(ColorUtils.RGBsToLAB(colors));
+            System.out.println("Favorites score " + favoritesScore);
+
 
         } catch (Exception e)
         {
         }
 
-        return score;
+        return score + favoritesScore;
 
     }
 
@@ -128,7 +132,10 @@ public class ColorRater {
         items.add(top);
         items.add(bottom);
 
-        System.out.println(RateColors(items));
+        FlickrImages favorites = new FlickrImages("Vic Powles", 5);
+
+
+        System.out.println(RateColors(items, favorites));
 
     }
 
