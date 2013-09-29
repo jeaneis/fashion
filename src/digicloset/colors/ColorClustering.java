@@ -102,20 +102,14 @@ public class ColorClustering {
         return labs;
     }
 
-    public static Color[] KMeans(BufferedImage image, int k)
+    private static double KMeansHelper(BufferedImage image, LAB[][] labImage, int k, Cluster[] seeds, Random random)
     {
-        System.out.println("Starting KMeans");
-
-        Random random = new Random();
-        Color[] result = new Color[k];
-
-        Cluster[] seeds = InitSeeds(k);
         int trials = 200;
         int width = image.getWidth();
         int height = image.getHeight();
 
         int[][] assignments = new int[width][height];
-        LAB[][] labImage = ConvertToLAB(image);
+
 
         for (int t=0; t<trials; t++)
         {
@@ -136,12 +130,12 @@ public class ColorClustering {
 
                     for (int s=0; s<seeds.length; s++)
                     {
-                       double dist = seeds[s].SqDist(pixel);
-                       if (dist < bestDist)
-                       {
-                           bestDist = dist;
-                           bestIndex = s;
-                       }
+                        double dist = seeds[s].SqDist(pixel);
+                        if (dist < bestDist)
+                        {
+                            bestDist = dist;
+                            bestIndex = s;
+                        }
                     }
 
                     if (assignments[i][j] != bestIndex)
@@ -155,7 +149,9 @@ public class ColorClustering {
             } //end image loop
 
             if (changes == 0)
+            {
                 break;
+            }
 
             //now re-compute the labels
             if (t < trials-1)
@@ -170,15 +166,49 @@ public class ColorClustering {
                     }
                 }
             }
+
+        }
+
+        //compute error
+        double error = 0;
+        for (int i=0; i<width; i++)
+            for (int j=0; j<height; j++)
+                error += seeds[assignments[i][j]].SqDist(labImage[i][j]);
+        return error;
+    }
+
+    public static Color[] KMeans(BufferedImage image, int k, int tries)
+    {
+        System.out.println("Starting KMeans");
+
+        LAB[][] labImage = ConvertToLAB(image);
+
+        Random random = new Random();
+        Color[] result = new Color[k];
+
+        Cluster[] seeds = InitSeeds(k);
+
+        double bestScore = Double.MAX_VALUE;
+        for (int i=0; i<tries; i++)
+        {
+            Cluster[] currSeeds = InitSeeds(k);
+            double score = KMeansHelper(image, labImage, k, currSeeds, random);
+
+            if (score < bestScore)
+            {
+                bestScore = score;
+                seeds = currSeeds;
+            }
         }
 
         for (int s=0; s<seeds.length; s++)
         {
             result[s] = seeds[s].MeanColor().toRGB();
-            System.out.println("Cluster "+s+" size "+seeds[s].getSize());
         }
 
+
         System.out.println("Done with Kmeans");
+
 
         return result;
     }
@@ -201,7 +231,7 @@ public class ColorClustering {
     {
         //test Kmeans
         BufferedImage image = ImageIO.read(new File("test.png"));
-        Color[] colors = KMeans(image, 5);
+        Color[] colors = KMeans(image, 5, 3);
         SaveColors(colors, "testPalette.png");
     }
 
