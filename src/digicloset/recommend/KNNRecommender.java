@@ -82,8 +82,9 @@ public class KNNRecommender extends Recommender {
   public double score(FashionItem candidate, FashionItem... input) {
     double score = 0.0;
     Counter<FashionItem> nn = this.nearestNeighbors.get(candidate);
+    if (nn == null) { return 0.0; }
     for (FashionItem anInput : input) {
-      score += nn.getCount(anInput);
+      score += (anInput != null) ? nn.getCount(anInput) : 0.0;
     }
     return score / ((double) input.length);
   }

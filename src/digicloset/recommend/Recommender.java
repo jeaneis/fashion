@@ -9,6 +9,7 @@ import java.io.*;
 import java.text.DecimalFormat;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -39,6 +40,7 @@ public abstract class Recommender {
       @SuppressWarnings("unchecked")
       @Override
       public boolean hasNext() {
+        if (nextVal != null) { return true; }
         if (!impl.hasNext()) { return false; }
         Pair<FashionItem, Double> next = impl.next();
         if (clazz.isAssignableFrom(next.first.getClass())) { nextVal =  Pair.makePair((E) next.first, next.second); }
@@ -46,6 +48,7 @@ public abstract class Recommender {
       }
       @Override
       public Pair<E, Double> next() {
+        if (!hasNext()) { throw new NoSuchElementException(); }
         Pair<E, Double> rtn = nextVal;
         nextVal = null;
         return rtn;
