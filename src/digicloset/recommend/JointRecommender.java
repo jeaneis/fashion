@@ -1,7 +1,6 @@
 package digicloset.recommend;
 
 import digicloset.clothes.FashionItem;
-import edu.stanford.nlp.kbp.slotfilling.common.Pointer;
 import edu.stanford.nlp.stats.ClassicCounter;
 import edu.stanford.nlp.stats.Counter;
 import edu.stanford.nlp.stats.Counters;
@@ -37,14 +36,21 @@ public class JointRecommender extends Recommender {
       int componentOnPrix = 0;
       private Random rand = new Random();
       Counter<FashionItem> jointScores = new ClassicCounter<FashionItem>() {{
-        for (Iterator<Pair<FashionItem, Double>> iter : iters) {
+        List<Runnable> queue = new ArrayList<Runnable>();
+        for (final Iterator<Pair<FashionItem, Double>> iter : iters) {
           for (int k = 0; k < buffer; ++k) {
-            if (iter.hasNext()) {
-              Pair<FashionItem, Double> x = iter.next();
-              setCount(x.first, score(x.first, input) + rand.nextGaussian() * 0.05);
-            }
+            queue.add(new Runnable() {
+              @Override
+              public void run() {
+                if (iter.hasNext()) {
+                  Pair<FashionItem, Double> x = iter.next();
+                  synchronized (this) { setCount(x.first, score(x.first, input) + rand.nextGaussian() * 0.05); }
+                }
+              }
+            });
           }
         }
+        threadAndRun(queue);
       }};
 
       private void enqueue(Pair<FashionItem, Double> elem) {
@@ -78,28 +84,18 @@ public class JointRecommender extends Recommender {
   }
 
   @Override
-  public double score(final FashionItem candidate, final FashionItem... input) {
-    final Pointer<Double> sumScore = new Pointer<Double>(0.0);
-    final Pointer<Boolean> usedColor = new Pointer<Boolean>(false);
-    List<Runnable> toRun = new ArrayList<Runnable>();
-    for (final Recommender component : this.components) {
-      toRun.add(new Runnable() {
-        @Override
-        public void run() {
-          double incr = 0.0;
-          if (component instanceof ColorRecommender && new Random().nextInt(5) < 2) {
-            incr = component.score(candidate, input) * 5;
-            usedColor.set(true);
-          } else if ( !(component instanceof ColorRecommender)) {
-            incr = component.score(candidate, input);
-          }
-          synchronized (sumScore) {
-            sumScore.set(sumScore.dereference().get() + incr);
-          }
-        }
-      });
+  public double score(FashionItem candidate, FashionItem... input) {
+    double sumScore = 0.0;
+    boolean usedColor = false;
+    for (Recommender component : this.components) {
+      if (component instanceof ColorRecommender && new Random().nextInt(5) < 2) {
+        sumScore += component.score(candidate, input) * 5;
+        usedColor = true;
+      } else if ( !(component instanceof ColorRecommender)) {
+        sumScore += component.score(candidate, input);
+
+      }
     }
-    threadAndRun(toRun);
-    return sumScore.dereference().get() / ((double) (this.components.length + (usedColor.dereference().get() ? 4 : -1)));
+    return sumScore / ((double) (this.components.length + (usedColor ? 4 : -1)));
   }
 }

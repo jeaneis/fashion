@@ -170,7 +170,10 @@ YUI().use("io-xdr", "json-parse", "json-stringify", "node",
         for (i = 0; i < recs.length; ++i) {
           // Add raw element
           var leftPadding = 25;
-          if (i == recs.length / 2) {
+          if ((i - (recs.length / 2)) < 0.25) {
+            Y.log("HERE");
+            Y.log(leftPadding);
+            Y.log(parentWidth);
             leftPadding = parentWidth + 50;
           }
           Y.one("#closet").append(
