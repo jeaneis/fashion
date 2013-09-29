@@ -24,7 +24,7 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.*;
  *
  * @author Gabor Angeli
  */
-public abstract class FashionItem {
+public abstract class FashionItem implements Comparable<FashionItem> {
 
   public static final Map<Integer, FashionItem> idLookup = new HashMap<Integer, FashionItem>();
   private static final Index<String> featurizer = new HashIndex<String>();
@@ -133,7 +133,7 @@ public abstract class FashionItem {
       } catch (IOException e)
       {
           this.bottomAttachmentPoint = new Point(defaultWidth/2, defaultHeight-1);
-          println("Error reading image");
+          println("Error reading image "+StandardImage());
       }
   }
 
@@ -142,11 +142,15 @@ public abstract class FashionItem {
       //find the image containing _in_
       for (String image:images)
       {
-         if (image.contains("_in_"))
-             return Props.DATA_INFO_DIR.getPath() + File.separator + image;
+         if (image.contains("_in_pp"))
+             return Props.DATA_IMAGE_DIR.getPath() + File.separator + image;
       }
-      return  "";
+      String standard = Props.DATA_IMAGE_DIR.getPath() + File.separator + images.iterator().next();
+      println("No Standard image " + standard);
+      return  standard;
   }
+
+  protected abstract int yPos();
 
   private double[] relatedIndicator(int depth, double[] feats, double factor, Set<Integer> seen) {
     if (depth == 0 || seen.contains(this.id)) {
@@ -185,6 +189,11 @@ public abstract class FashionItem {
     return related;
   }
 
+  @Override
+  public int compareTo(FashionItem other) {
+    return other.yPos() - this.yPos();
+  }
+
   private static String cleanToken(String input) {
     return input.replaceAll("\\.", "").replaceAll(",", "").replaceAll("(\n|\r)+", "").replaceAll("\\s+", " ").trim();
   }
@@ -199,6 +208,19 @@ public abstract class FashionItem {
       out.remove(remove);
     }
     return out;
+  }
+
+  private static Set<String> getPathTokens(String[] tokens, String... toRemove) {
+      Set<String> out = new HashSet<String>();
+      for (String tok:tokens) {
+          Boolean exists = new File(tok).exists();
+          if (exists)
+            out.add(tok);
+      }
+      for (String remove : toRemove) {
+          out.remove(remove);
+      }
+      return out;
   }
 
   private static Set<Integer> cleanTokensInt(String[] tokens, String... toRemove) {
@@ -251,8 +273,11 @@ public abstract class FashionItem {
         else if (key.equalsIgnoreCase("shownWith")) { shownWith = cleanTokensInt(fields, "shownWith"); }
         else if (key.equalsIgnoreCase("details")) { details = cleanToken(fields[1]); }
         else if (key.equalsIgnoreCase("recommended")) { recommended = cleanTokensInt(fields, "recommended"); }
-        else if (key.equalsIgnoreCase("images")) { images = cleanTokens(fields, "images"); }
+        else if (key.equalsIgnoreCase("images")) { images = getPathTokens(fields, "images"); }
       }
+
+      if (images.size() == 0)
+          return null;
 
       // Categorize
       if (categories.contains("Clothing"))

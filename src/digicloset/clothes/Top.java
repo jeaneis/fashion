@@ -12,4 +12,9 @@ public class Top extends FashionItem {
     super(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
     findBottomAttachment();
   }
+
+  @Override
+  protected int yPos() {
+    return 40;
+  }
 }
