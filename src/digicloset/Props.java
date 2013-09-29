@@ -53,6 +53,8 @@ public class Props {
   public static File DATA_INFO_DIR  = new File("data/info");
   @Option(name="data.vectornn.file", gloss="The file where the recommended nearest neighbors live")
   public static File DATA_VECTORNN_FILE  = new File("data/vectorNN.tab.gz");
+  @Option(name="data.textnn.file", gloss="The file where the text-based nearest neighbors live")
+  public static File DATA_TEXTNN_FILE  = new File("data/textNN.tab.gz");
 
   private static void initializeAndValidate() {
     if (!DATA_INFO_DIR.exists() || !DATA_INFO_DIR.isDirectory()) {

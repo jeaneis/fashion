@@ -1,5 +1,6 @@
 package digicloset.recommend;
 
+import digicloset.Props;
 import digicloset.clothes.FashionItem;
 import edu.stanford.nlp.ling.CoreAnnotations;
 import edu.stanford.nlp.ling.CoreLabel;
@@ -30,119 +31,123 @@ public class TextRecommender extends Recommender {
 
   public final HashMap<FashionItem, Counter<FashionItem>> nearestNeighbors = new HashMap<FashionItem, Counter<FashionItem>>();
 
-  private Collection<FashionItem> items;
-
   public TextRecommender(Collection<FashionItem> items, boolean includeKeywords)
   {
     DistSim model = DistSim.load("models/distsim.ser.gz");
 //    model.sim("dog", "cat").get().cos();
 
-    this.items = items;
-    forceTrack("Precomputing nearest neighbors");
-    // Get vectors
-    forceTrack("Computing vectors");
-    double weightKeyword = 2;
-    double weightAdj = 1;
-    double sumWeights = 0;
-    Map<FashionItem, Set<String>> adjMap = new HashMap<FashionItem, Set<String>>();
-    Map<FashionItem, Set<String>> keywordMap = new HashMap<FashionItem, Set<String>>();
-    for (FashionItem item : items) {
-      keywordMap.put(item, item.toKeywordSet());
-      if (includeKeywords)
-      {
-        Set<String> allWordSet = item.toAdjectiveSet();
-        allWordSet.addAll(item.toKeywordSet());
-        adjMap.put(item, allWordSet);
-      }
-      else
-      {
-        adjMap.put(item, item.toAdjectiveSet());
-      }
-    }
-    endTrack("Computing vectors");
-
-    for (FashionItem source : adjMap.keySet()) {
-      log("NN for " + source);
-      Set<String> sourceAdjs = adjMap.get(source);
-      ClassicCounter<FashionItem> neighbors = new ClassicCounter<FashionItem>();
-
-      for (FashionItem cand : adjMap.keySet()) {
-        if (source == cand) { continue; }
-        Set<String> candAdjs = adjMap.get(cand);
-
-        Set<String> smallSet;
-        Set<String> bigSet;
-        if (sourceAdjs.size() <= candAdjs.size())
+    if (!loadNN(Props.DATA_TEXTNN_FILE, this.nearestNeighbors)) {
+      forceTrack("Precomputing nearest neighbors");
+      // Get vectors
+      forceTrack("Computing vectors");
+      double weightKeyword = 2;
+      double weightAdj = 1;
+      double sumWeights = 0;
+      Map<FashionItem, Set<String>> adjMap = new HashMap<FashionItem, Set<String>>();
+      Map<FashionItem, Set<String>> keywordMap = new HashMap<FashionItem, Set<String>>();
+      for (FashionItem item : items) {
+        keywordMap.put(item, item.toKeywordSet());
+        if (includeKeywords)
         {
-          smallSet = sourceAdjs;
-          bigSet = candAdjs;
+          Set<String> allWordSet = item.toAdjectiveSet();
+          allWordSet.addAll(item.toKeywordSet());
+          adjMap.put(item, allWordSet);
         }
         else
         {
-          smallSet = candAdjs;
-          bigSet = sourceAdjs;
+          adjMap.put(item, item.toAdjectiveSet());
         }
+      }
+      endTrack("Computing vectors");
+
+      for (FashionItem source : adjMap.keySet()) {
+        log("NN for " + source);
+        Set<String> sourceAdjs = adjMap.get(source);
+        ClassicCounter<FashionItem> neighbors = new ClassicCounter<FashionItem>();
+
+        for (FashionItem cand : adjMap.keySet()) {
+          if (source == cand) { continue; }
+          Set<String> candAdjs = adjMap.get(cand);
+
+          Set<String> smallSet;
+          Set<String> bigSet;
+          if (sourceAdjs.size() <= candAdjs.size())
+          {
+            smallSet = sourceAdjs;
+            bigSet = candAdjs;
+          }
+          else
+          {
+            smallSet = candAdjs;
+            bigSet = sourceAdjs;
+          }
 
 //        double[] maxSimVals = new double[smallSet.size()];
-        double sumMaxVals = 0;
+          double sumMaxVals = 0;
 
-        for (int i = 0; i < smallSet.size(); i++)
-        {
-          double maxVal = Double.NEGATIVE_INFINITY;
-          String maxWord = "";
-          String sAdj = smallSet.iterator().next();
-
-          for (String bAdj : bigSet)
+          for (int i = 0; i < smallSet.size(); i++)
           {
-            double jaccard = model.sim(sAdj, bAdj).get().jaccard();
-            if (jaccard > maxVal)
-            {
-              maxVal = jaccard;
-              maxWord = bAdj;
-            }
-          }
+            double maxVal = Double.NEGATIVE_INFINITY;
+            String maxWord = "";
+            String sAdj = smallSet.iterator().next();
 
-          if (includeKeywords) {
-            Set<String> smallKeySet;
-            Set<String> bigKeySet;
-            if (sourceAdjs.size() <= candAdjs.size())
+            for (String bAdj : bigSet)
             {
-              smallKeySet = keywordMap.get(source);
-              bigKeySet = keywordMap.get(cand);
-            }
-            else
-            {
-              smallKeySet = keywordMap.get(cand);
-              bigKeySet = keywordMap.get(source);
+              double jaccard;
+              try {
+                jaccard = model.sim(sAdj, bAdj).get().jaccard();
+              } catch (NoSuchElementException e) {
+                jaccard = 0.0;
+              }
+              if (jaccard > maxVal)
+              {
+                maxVal = jaccard;
+                maxWord = bAdj;
+              }
             }
 
-            if (bigKeySet.contains(maxWord) || smallKeySet.contains(sAdj))
-            {
-              sumMaxVals += weightKeyword * maxVal;
-              sumWeights += weightKeyword;
+            if (includeKeywords) {
+              Set<String> smallKeySet;
+              Set<String> bigKeySet;
+              if (sourceAdjs.size() <= candAdjs.size())
+              {
+                smallKeySet = keywordMap.get(source);
+                bigKeySet = keywordMap.get(cand);
+              }
+              else
+              {
+                smallKeySet = keywordMap.get(cand);
+                bigKeySet = keywordMap.get(source);
+              }
+
+              if (bigKeySet.contains(maxWord) || smallKeySet.contains(sAdj))
+              {
+                sumMaxVals += weightKeyword * maxVal;
+                sumWeights += weightKeyword;
+              }
+              else {
+                sumMaxVals += weightAdj * maxVal;
+                sumWeights += weightAdj;
+              }
             }
             else {
-              sumMaxVals += weightAdj * maxVal;
-              sumWeights += weightAdj;
+              // maxSimVals[i] = maxVal;
+              sumMaxVals += maxVal;
             }
           }
-          else {
-            // maxSimVals[i] = maxVal;
-            sumMaxVals += maxVal;
+
+          double val = 0;
+          if (smallSet.size() != 0)
+          {
+            val = sumMaxVals / smallSet.size();
           }
-        }
 
-        double val = 0;
-        if (smallSet.size() != 0)
-        {
-          val = sumMaxVals / smallSet.size();
+          neighbors.setCount(cand, val);
         }
-
-        neighbors.setCount(cand, val);
+        nearestNeighbors.put(source, neighbors);
       }
-      nearestNeighbors.put(source, neighbors);
+      saveNN(Props.DATA_TEXTNN_FILE, this.nearestNeighbors);
     }
-
     endTrack("Precomputing nearest neighbors");
   }
 
