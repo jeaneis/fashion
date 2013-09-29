@@ -186,8 +186,8 @@ YUI().use("io-xdr", "json-parse", "json-stringify", "node",
           alternativeImage.on('mouseleave', function(e) { e.target.setStyle('opacity', '0.75'); });
         }
         // Add a close button
-        Y.one("#closet").append('<img id="close" src="images/close.png"/>');
-        Y.one('#close').on('click', function() { alert("closing window (but not)"); });
+//        Y.one("#closet").append('<img id="close" src="images/close.png"/>');
+//        Y.one('#close').on('click', function() { alert("closing window (but not)"); });
       }
     });
     

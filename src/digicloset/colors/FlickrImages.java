@@ -105,7 +105,8 @@ public class FlickrImages {
         {
             score += ColorUtils.PaletteDist(palettes.get(i), query);
         }
-        score /= palettes.size();
+        if (palettes.size() > 0)
+            score /= palettes.size();
 
         return Math.exp(-score);
     }

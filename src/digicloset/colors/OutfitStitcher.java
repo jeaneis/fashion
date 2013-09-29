@@ -82,7 +82,8 @@ public class OutfitStitcher {
         for (int i=0; i<items.size(); i++)
         {
             BufferedImage image = ImageIO.read(new File(items.get(i).StandardImage()));
-            image = RemoveBackground(image);
+            //image = RemoveBackground(image);
+
             graphics.drawImage(image, startPoints.get(i).x, startPoints.get(i).y, null);
         }
 

@@ -18,6 +18,8 @@ import java.util.HashSet;
 import java.net.*;
 import java.io.*;
 
+import static edu.stanford.nlp.util.logging.Redwood.Util.*;
+
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
@@ -50,7 +52,7 @@ public class ColorRater {
         try
         {
             BufferedImage image = OutfitStitcher.Stitch(items);
-            Image resized = image.getScaledInstance(image.getWidth()/4, image.getHeight()/4, Image.SCALE_SMOOTH);
+            Image resized = image.getScaledInstance(image.getWidth()/8, image.getHeight()/8, Image.SCALE_SMOOTH);
             BufferedImage resizedImage = new BufferedImage(resized.getWidth(null), resized.getHeight(null), BufferedImage.TYPE_INT_ARGB);
             resizedImage.getGraphics().drawImage(resized, 0, 0, null);
             //ImageIO.write(resizedImage, "png", new File("resized.png"));
@@ -72,9 +74,12 @@ public class ColorRater {
             Color[] colors = ColorClustering.KMeans(paletteImage, Props.PALETTE_K, 5);
 
             //ColorClustering.SaveColors(colors, "outfitPalette.png");
-            String[] palette = new String[Props.PALETTE_K];
+            String[] palette = new String[Props.PALETTE_K+1];
             for(int i=0; i<colors.length; i++)
                 palette[i] = ColorUtils.ColorToHex(colors[i]).replace("#","");
+
+
+            palette[palette.length-1] = "ffffff";
 
 
             //palette = new String[]{"F1E5A5","E60D44","FF8C56","FECC5A","7FD5AB"};
@@ -149,10 +154,11 @@ public class ColorRater {
         items.add(top);
         items.add(bottom);
 
-        FlickrImages favorites = new FlickrImages("Vic Powles", Props.PALETTE_K);
+        FlickrImages favorites = new FlickrImages("chispita_666", Props.PALETTE_K);
 
+        forceTrack("Rate");
         System.out.println(RateColors(items, favorites));
-
+        endTrack("Rate");
     }
 
 }
