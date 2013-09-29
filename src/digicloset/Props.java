@@ -4,6 +4,7 @@ import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValue;
 import digicloset.handlers.PingRequestHandler;
+import digicloset.recommend.Recommender;
 import edu.stanford.nlp.util.Execution;
 import edu.stanford.nlp.util.Execution.Option;
 import edu.stanford.nlp.util.Function;
@@ -25,7 +26,8 @@ public class Props {
   private static final Redwood.RedwoodChannels logger = Redwood.channels("Exec");
 
   public static enum SERVICE {
-    PING(new PingRequestHandler(), "/ping");
+    PING(new PingRequestHandler(), "/ping"),
+    RECOMMEND(null, "/recommend");
 
     public final WebServerHandler handler;
     public final String path;

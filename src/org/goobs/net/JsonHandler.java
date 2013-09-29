@@ -24,10 +24,14 @@ public abstract class JsonHandler implements WebServerHandler {
     }
 
     String response;
-    if (callback == null) {
-      response = handleJSON(values, info);
-    } else {
-      response = ""+callback+"(\n"+handleJSON(values, info)+"\n)";
+    try {
+      if (callback == null) {
+        response = handleJSON(values, info);
+      } else {
+        response = ""+callback+"(\n"+handleJSON(values, info)+"\n)";
+      }
+    } catch (RuntimeException e) {
+      response = error(e);
     }
     responseBody.write(response.getBytes());
   }
