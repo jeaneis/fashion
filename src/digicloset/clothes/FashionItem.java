@@ -375,7 +375,7 @@ public abstract class FashionItem implements Comparable<FashionItem> {
         else if (key.equalsIgnoreCase("description")) { description = cleanParagraph(fields[1]); }
         else if (key.equalsIgnoreCase("keywords")) { keywords = cleanTokens(fields, "keywords"); }
         else if (key.equalsIgnoreCase("shownWith")) { shownWith = cleanTokensInt(fields, "shownWith"); }
-        else if (key.equalsIgnoreCase("details")) { details = cleanToken(fields[1]); }
+        else if (key.equalsIgnoreCase("details")) { if(fields.length<=1){details="";} else{ details = cleanToken(fields[1]);} }
         else if (key.equalsIgnoreCase("recommended")) { recommended = cleanTokensInt(fields, "recommended"); }
         else if (key.equalsIgnoreCase("images")) { images = getPathTokens(fields, "images"); }
         else if (key.equalsIgnoreCase("measurements.header")) {
