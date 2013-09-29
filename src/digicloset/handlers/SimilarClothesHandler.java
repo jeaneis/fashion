@@ -7,17 +7,14 @@ import edu.stanford.nlp.util.Pair;
 import org.goobs.net.JsonHandler;
 import org.goobs.net.WebServer;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Recommends similar clothes given an input.
  *
  * Input:
  *
- * {
+ * data = {
  *   input: [item_id*],
  *   start: start_index,
  *   end: end_index
@@ -41,21 +38,23 @@ public class SimilarClothesHandler extends JsonHandler {
     this.recommender = recommender;
   }
 
+  @SuppressWarnings("unchecked")
   @Override
-  public String handleJSON(HashMap<String, String> values, WebServer.HttpInfo info) {
-    // Sanity check
+  public String handleJSON(HashMap<String, String> rawRequest, WebServer.HttpInfo info) {
     Gson gson = new Gson();
+    HashMap<String, Object> values = gson.fromJson(rawRequest.get("data"), HashMap.class);
+    // Sanity check
     if (!values.containsKey("input")) { return error("Expected { input: [ item_id* ], start: start_index, count: num_results"); }
     if (!values.containsKey("start")) { return error("Expected { input: [ item_id* ], start: start_index, count: num_results"); }
     if (!values.containsKey("count")) { return error("Expected { input: [ item_id* ], start: start_index, count: num_results"); }
-    int[] input = gson.fromJson(values.get("input"), int[].class);
-    int start = Integer.parseInt(values.get("start"));
-    int count = Integer.parseInt(values.get("count"));
+    List<Integer> input = (List<Integer>) values.get("input");
+    int start = (int) Double.parseDouble(values.get("start").toString());
+    int count = (int) Double.parseDouble(values.get("count").toString());
 
     // Construct nearest neighbors
-    FashionItem[] items = new FashionItem[input.length];
-    for (int i = 0; i < input.length; ++i) {
-      items[i] = FashionItem.idLookup.get(input[i]);
+    FashionItem[] items = new FashionItem[input.size()];
+    for (int i = 0; i < input.size(); ++i) {
+      items[i] = FashionItem.idLookup.get(input.get(i));
       if (items[i] == null) { error("could not find item: " + items[i]); }
     }
     Iterator<Pair<FashionItem,Double>> iter = recommender.recommendFrom(items);

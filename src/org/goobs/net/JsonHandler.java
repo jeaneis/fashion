@@ -31,6 +31,7 @@ public abstract class JsonHandler implements WebServerHandler {
         response = ""+callback+"(\n"+handleJSON(values, info)+"\n)";
       }
     } catch (RuntimeException e) {
+      e.printStackTrace();
       response = error(e);
     }
     responseBody.write(response.getBytes());
