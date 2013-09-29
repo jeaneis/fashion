@@ -60,7 +60,7 @@ public class KNNRecommender extends Recommender {
   }
 
   private boolean loadNN() {
-
+    return false;
   }
 
   private double jaccard(double[] a, double[] b) {

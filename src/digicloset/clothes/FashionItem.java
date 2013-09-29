@@ -73,6 +73,10 @@ public abstract class FashionItem {
       return feats;
     }
   }
+  private static List<String> tops = Arrays.asList("Knitwear", "Tops");
+  private static List<String> bottoms = Arrays.asList("Pants", "Jeans", "Shorts", "Skirts");
+  private static List<String> dresses = Arrays.asList("Jumpsuits", "Dresses");
+  private static List<String> outerwear = Arrays.asList("Coats", "Jackets");
 
   public double[] toVectorSpace() {
     // Ensure indexer is populated
@@ -160,14 +164,20 @@ public abstract class FashionItem {
       }
 
       // Categorize
-      if (categories.contains("Tops")) {
-        return (E) new Top(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
-      } else if (categories.contains("Skirts") || categories.contains("Pants") || categories.contains("Jeans")) {
-        return (E) new Bottom(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
+      if (categories.contains("Clothing"))
+      {
+        if (isMember(categories, tops)) {
+          return (E) new Top(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
+        } else if (isMember(categories, bottoms)) {
+          return (E) new Bottom(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
+        } else if (isMember(categories, dresses)) {
+          return (E) new Dress(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
+        }
+        else {
+          return null;
+        }
       } else if (categories.contains("Shoes")) {
         return (E) new Shoe(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
-      } else if (categories.contains("Dresses")) {
-        return (E) new Dress(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
       } else {
 //        debug("unknown categories: " + StringUtils.join(categories, " ").replaceAll("\\s+", " "));
         return null;
@@ -227,5 +237,16 @@ public abstract class FashionItem {
         "id=" + id +
         ", name='" + name + '\'' +
         '}';
+  }
+
+  public static boolean isMember(Set<String> categories, List<String> list) {
+    for(String item : list)
+    {
+      if (categories.contains(item))
+      {
+        return true;
+      }
+    }
+    return false;
   }
 }

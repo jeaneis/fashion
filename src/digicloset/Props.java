@@ -41,7 +41,7 @@ public class Props {
   public static SERVICE[] SERVICE_ENABLE  = new SERVICE[0];
 
   @Option(name="server.port", gloss="The port to listen to requests from")
-  public static int SERVER_PORT  = 4242;
+  public static int SERVER_PORT  = 8000;//4242;
 
   @Option(name="data.info.dir", gloss="The directory with the info files")
   public static File DATA_INFO_DIR  = new File("/home/gabor/workspace/fashion/data/info");
