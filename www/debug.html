@@ -1,71 +1,28 @@
 <html>
 <head>
-<script src="http://yui.yahooapis.com/3.12.0/build/yui/yui-min.js"></script>
-<script>
-YUI().use("io-xdr", "json-parse", "json-stringify", "node", function(Y) {
-/*
-  var handleStart = function(id, a) { };
-  var handleSuccess = function(id, o, a) {
-    var parsed = Y.JSON.parse(o.responseText);
-  };
-  var handleFailure = function(id, o, a) { Y.log("FAILURE!"); };
-  var cfg = {
-      method: "GET",
-      on: {
-        start: handleStart,
-        success: handleSuccess,
-        failure: handleFailure
-      }
-    };
-*/
-
-  var getItem = function(id, callback) {
-    Y.io( "http://localhost:4242/lookup_item?id=" + encodeURIComponent(id), {
-      method: "GET", on: { success: function(id, o, a){ callback(Y.JSON.parse(o.responseText)); } }
-    });
-  }
-
-  var getRecommendations = function(ids, callback) {
-    var query = {
-      input:((ids instanceof Array) ? ids : [ids]),
-      start:0,
-      count:10
-    };
-    Y.io( "http://localhost:4242/recommend?data=" + encodeURIComponent(Y.JSON.stringify(query)),
-      {method: "GET", on: { success: function(id, o, a){
-        Y.log(o.responseText);
-        callback(Y.JSON.parse(o.responseText)); } }
-      });
-  }
-
-  Y.one('#button_lookup_id').on('click', function () {
-    var id = Y.one('#input_id').get('value');
-    Y.log("querying " + id);
-    getItem(id, function(obj) { 
-      // Write image
-      Y.one('#item_img').set('src', '/img_clothes/' + id + '_in_pp.jpg');
-      // Query similarities
-      getRecommendations(id, function(recs) {
-        Y.one("#suggestions").setHTML('');
-        for (i = 0; i < recs.length; ++i) {
-          Y.one("#suggestions").append('' + recs[i].score +
-            ': <img src="/img_clothes/' + recs[i].id + '_in_pp.jpg" width="300" height="200"/>');
-        }
-      });
-    });
-  });
-
-});
-</script>
-<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.3.0/pure-min.css">
+<script src="yui-min.js"></script>
+<script type="text/javascript" charset="utf-8" src="fashon.js"></script>
+<link rel="stylesheet" href="pure-min.css">
+<link rel="stylesheet" href="fashion.css">
 </head>
 <body>
 
 
 <label>Input a clothing id: <input id="input_id"></label>
 <button id="button_lookup_id">lookup</button>
+
+<div id="centerDiv">
+<div id="canvas">
+  <img id="top" class="clothingItem" src="/img_clothes/389883_in_pp.jpg"/>
+  <img id="bottom" class="clothingItem" src="/img_clothes/383276_in_pp.jpg"/ >
+  <img id="shoe" class="clothingItem" src="/img_clothes/374677_in_pp.jpg"/>
+
+  <div id="closet">
+</div>
+</div>
+
 <div id="item">
-  <img id="item_img", src="" width="250" height="250"/>
+  <img id="item_img"  src="" width="300"/>
 </div>
 <div id="suggestions"></div>
 

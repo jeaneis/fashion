@@ -22,6 +22,7 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.log;
 public abstract class Recommender {
 
   public abstract Iterator<Pair<FashionItem, Double>> recommendFrom(FashionItem... input);
+  public abstract double score(FashionItem candidate, FashionItem... input);
 
   public Iterator<Pair<Top, Double>> recommendTopFrom(FashionItem... input) { return recommendXFrom(Top.class, input); }
   public Iterator<Pair<Bottom, Double>> recommendBottomFrom(FashionItem... input) { return recommendXFrom(Bottom.class, input); }

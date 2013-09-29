@@ -77,4 +77,14 @@ public class KNNRecommender extends Recommender {
     log("RESPOND knn lookup");
     return Counters.toDescendingMagnitudeSortedListWithCounts(counts).iterator();
   }
+
+  @Override
+  public double score(FashionItem candidate, FashionItem... input) {
+    double score = 0.0;
+    Counter<FashionItem> nn = this.nearestNeighbors.get(candidate);
+    for (FashionItem anInput : input) {
+      score += nn.getCount(anInput);
+    }
+    return score / ((double) input.length);
+  }
 }
