@@ -149,8 +149,8 @@ public class TextRecommender extends Recommender {
         nearestNeighbors.put(source, neighbors);
       }
       saveNN(Props.DATA_TEXTNN_FILE, this.nearestNeighbors);
+      endTrack("Precomputing nearest neighbors");
     }
-    endTrack("Precomputing nearest neighbors");
   }
 
 
