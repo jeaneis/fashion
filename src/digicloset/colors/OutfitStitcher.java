@@ -76,8 +76,8 @@ public class OutfitStitcher {
 
         int width = items.get(0).getTopAttachmentPoint().x*2;
         BufferedImage result = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        Graphics2D graphics = result.createGraphics();
-        graphics.setPaintMode();
+        Graphics graphics = result.createGraphics();
+        //graphics.setPaintMode();
 
         for (int i=0; i<items.size(); i++)
         {
@@ -85,6 +85,8 @@ public class OutfitStitcher {
             image = RemoveBackground(image);
             graphics.drawImage(image, startPoints.get(i).x, startPoints.get(i).y, null);
         }
+
+        //ImageIO.write(result,"png",new File("stitched.png"));
 
 
         return result;
