@@ -15,6 +15,7 @@ import java.util.*;
  * Input:
  *
  * data = {
+ *   type: limit_output_clothing_type,
  *   input: [item_id*],
  *   start: start_index,
  *   end: end_index
@@ -44,9 +45,10 @@ public class SimilarClothesHandler extends JsonHandler {
     Gson gson = new Gson();
     HashMap<String, Object> values = gson.fromJson(rawRequest.get("data"), HashMap.class);
     // Sanity check
-    if (!values.containsKey("input")) { return error("Expected { input: [ item_id* ], start: start_index, count: num_results"); }
-    if (!values.containsKey("start")) { return error("Expected { input: [ item_id* ], start: start_index, count: num_results"); }
-    if (!values.containsKey("count")) { return error("Expected { input: [ item_id* ], start: start_index, count: num_results"); }
+    if (!values.containsKey("type")) {  return error("Expected { type: type_to_query, input: [ item_id* ], start: start_index, count: num_results"); }
+    if (!values.containsKey("input")) { return error("Expected { type: type_to_query, input: [ item_id* ], start: start_index, count: num_results"); }
+    if (!values.containsKey("start")) { return error("Expected { type: type_to_query, input: [ item_id* ], start: start_index, count: num_results"); }
+    if (!values.containsKey("count")) { return error("Expected { type: type_to_query, input: [ item_id* ], start: start_index, count: num_results"); }
     List<Object> input = (List<Object>) values.get("input");
     int start = (int) Double.parseDouble(values.get("start").toString());
     int count = (int) Double.parseDouble(values.get("count").toString());
@@ -57,13 +59,27 @@ public class SimilarClothesHandler extends JsonHandler {
       items[i] = FashionItem.idLookup.get((int) Double.parseDouble(input.get(i).toString()));
       if (items[i] == null) { error("could not find item: " + items[i]); }
     }
-    Iterator<Pair<FashionItem,Double>> iter = recommender.recommendFrom(items);
+    // Switch on the restricting type
+    String type = values.get("type").toString();
+    Iterator iter;
+    if (type.equalsIgnoreCase("all")) {
+      iter = recommender.recommendFrom(items);
+    } else if (type.equalsIgnoreCase("top")) {
+      iter = recommender.recommendTopFrom(items);
+    } else if (type.equalsIgnoreCase("bottom")) {
+      iter = recommender.recommendBottomFrom(items);
+    } else if (type.equalsIgnoreCase("shoe")) {
+      iter = recommender.recommendShoeFrom(items);
+    } else {
+      return error("Invalid clothing type: " + type);
+    }
     for (int i = 0; i < start; ++i) { iter.next(); }
 
     // Output
     List<HashMap<String,Object>> jsonOut = new ArrayList<HashMap<String,Object>>();
     for (int i = 0; i < count; ++i) {
-      Pair<FashionItem, Double> recommendation = iter.next();
+      if (!iter.hasNext()) { break; }
+      Pair<FashionItem, Double> recommendation = (Pair<FashionItem, Double>) iter.next();
       HashMap<String, Object> obj = new HashMap<String, Object>();
       obj.put("id", recommendation.first.id);
       obj.put("score", recommendation.second);

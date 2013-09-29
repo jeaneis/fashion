@@ -7,6 +7,7 @@ import edu.stanford.nlp.stats.Counters;
 import edu.stanford.nlp.util.Pair;
 
 import java.util.Iterator;
+import java.util.Random;
 
 /**
  * Combine judgements from multiple fashion recommenders.
@@ -29,19 +30,20 @@ public class JointRecommender extends Recommender {
 
     return new Iterator<Pair<FashionItem, Double>>() {
       int componentOnPrix = 0;
+      private Random rand = new Random();
       Counter<FashionItem> jointScores = new ClassicCounter<FashionItem>() {{
         for (Iterator<Pair<FashionItem, Double>> iter : iters) {
           for (int k = 0; k < buffer; ++k) {
             if (iter.hasNext()) {
               Pair<FashionItem, Double> x = iter.next();
-              setCount(x.first, score(x.first, input));
+              setCount(x.first, score(x.first, input) + rand.nextGaussian() * 0.05);
             }
           }
         }
       }};
 
       private void enqueue(Pair<FashionItem, Double> elem) {
-        jointScores.setCount(elem.first, score(elem.first, input));
+        jointScores.setCount(elem.first, score(elem.first, input) + rand.nextGaussian() * 0.05);
       }
 
       @Override
