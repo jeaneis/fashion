@@ -19,3 +19,5 @@ www/img_clothes
 data/images
 
 lib/stanford-corenlp-models-current.jar
+
+data/textNN.tab.gz
