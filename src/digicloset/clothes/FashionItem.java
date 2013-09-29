@@ -184,7 +184,7 @@ public abstract class FashionItem implements Comparable<FashionItem> {
 
   public Set<String> toAdjectiveSet()
   {
-    return new HashSet<String>(getAdjectives(description));
+    return new HashSet<String>(getAdjectives(description.toLowerCase()));
   }
 
   private Annotation annotateString(String description)
@@ -211,7 +211,12 @@ public abstract class FashionItem implements Comparable<FashionItem> {
 
   public Set<String> toKeywordSet()
   {
-    return keywords;
+    Set<String> keySet = new HashSet<String>();
+    for (String s : keywords)
+    {
+      keySet.add(s.toLowerCase());
+    }
+    return keySet;
   }
 
   public double[] toVectorSpace() {
