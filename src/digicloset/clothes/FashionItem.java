@@ -45,6 +45,11 @@ public abstract class FashionItem {
     this.images = images;
   }
 
+  private static List<String> tops = Arrays.asList("Knitwear", "Tops");
+  private static List<String> bottoms = Arrays.asList("Pants", "Jeans", "Shorts", "Skirts");
+  private static List<String> dresses = Arrays.asList("Jumpsuits", "Dresses");
+  private static List<String> outerwear = Arrays.asList("Coats", "Jackets");
+
   // Measurements
 
 
@@ -105,14 +110,20 @@ public abstract class FashionItem {
       }
 
       // Categorize
-      if (categories.contains("Tops")) {
-        return (E) new Top(metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
-      } else if (categories.contains("Skirts")) {
-        return (E) new Bottom(metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
+      if (categories.contains("Clothing"))
+      {
+        if (isMember(categories, tops)) {
+          return (E) new Top(metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
+        } else if (isMember(categories, bottoms)) {
+          return (E) new Bottom(metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
+        } else if (isMember(categories, dresses)) {
+          return (E) new Dress(metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
+        }
+        else {
+          return null;
+        }
       } else if (categories.contains("Shoes")) {
         return (E) new Shoe(metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
-      } else if (categories.contains("Dresses")) {
-        return (E) new Dress(metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
       } else {
         return null;
       }
@@ -124,5 +135,16 @@ public abstract class FashionItem {
   public static Map<Class, FashionItem> read() {
     IOUtils.iterFilesRecursive(Props.DATA_INFO_DIR);
     return null;
+  }
+
+  public static boolean isMember(Set<String> categories, List<String> list) {
+    for(String item : list)
+    {
+      if (categories.contains(item))
+      {
+        return true;
+      }
+    }
+    return false;
   }
 }
