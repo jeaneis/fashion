@@ -6,12 +6,14 @@ import com.typesafe.config.ConfigValue;
 import digicloset.handlers.FashionItemRequestHandler;
 import digicloset.handlers.PingRequestHandler;
 import digicloset.recommend.Recommender;
+import digicloset.colors.*;
 import edu.stanford.nlp.util.Execution;
 import edu.stanford.nlp.util.Execution.Option;
 import edu.stanford.nlp.util.Function;
 import edu.stanford.nlp.util.StringUtils;
 import edu.stanford.nlp.util.logging.Redwood;
 import org.goobs.net.WebServerHandler;
+
 
 import java.io.File;
 import java.io.IOException;
@@ -55,6 +57,8 @@ public class Props {
   public static File DATA_VECTORNN_FILE  = new File("data/vectorNN.tab.gz");
   @Option(name="data.textnn.file", gloss="The file where the text-based nearest neighbors live")
   public static File DATA_TEXTNN_FILE  = new File("data/textNN.tab.gz");
+
+  public static int PALETTE_K = 5;
 
   private static void initializeAndValidate() {
     if (!DATA_INFO_DIR.exists() || !DATA_INFO_DIR.isDirectory()) {

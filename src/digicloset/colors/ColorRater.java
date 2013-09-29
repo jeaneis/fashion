@@ -56,7 +56,7 @@ public class ColorRater {
 
             Color[] colors = ColorClustering.KMeans(resizedImage, 5, 5);
             //ColorClustering.SaveColors(colors, "outfitPalette.png");
-            String[] palette = new String[5];
+            String[] palette = new String[Props.PALETTE_K];
             for(int i=0; i<colors.length; i++)
                 palette[i] = ColorUtils.ColorToHex(colors[i]).replace("#","");
 
@@ -132,7 +132,7 @@ public class ColorRater {
         items.add(top);
         items.add(bottom);
 
-        FlickrImages favorites = new FlickrImages("Vic Powles", 5);
+        FlickrImages favorites = new FlickrImages("Vic Powles", Props.PALETTE_K);
 
 
         System.out.println(RateColors(items, favorites));
