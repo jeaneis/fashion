@@ -229,7 +229,7 @@ public abstract class FashionItem implements Comparable<FashionItem> {
   private static Set<String> getPathTokens(String[] tokens, String... toRemove) {
       Set<String> out = new HashSet<String>();
       for (String tok:tokens) {
-          Boolean exists = new File(tok).exists();
+          Boolean exists = new File(Props.DATA_IMAGE_DIR + File.separator + tok).exists();
           if (exists)
             out.add(tok);
       }
