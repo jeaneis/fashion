@@ -22,35 +22,18 @@ import java.util.Properties;
  */
 public class Parser {
 
-  LexicalizedParser lp = null;
+  public final StanfordCoreNLP pipeline;
 
   public Parser(){
-//    lp = LexicalizedParser.loadModel("edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz");
-//    lp.setOptionFlags(new String[]{"-maxLength", "100", "-outputFormat", "penn"});
-  }
-
-  public Tree getParseTree(String sentence)
-  {
-    StringReader inputReader = new StringReader(sentence);
-
-    TokenizerFactory<CoreLabel> tokenizerFactory =
-        PTBTokenizer.factory(new CoreLabelTokenFactory(), "americanize=false");
-    List<CoreLabel> rawWords2 =
-        tokenizerFactory.getTokenizer(inputReader).tokenize();
-
-    Tree parse = lp.apply(rawWords2);
-
-    return parse;
+    Properties props = new Properties();
+    props.setProperty("annotators", "tokenize,ssplit,pos");
+    pipeline = new StanfordCoreNLP(props);
   }
 
   public Annotation annotateString(String description)
   {
-    Properties props = new Properties();
-    props.setProperty("annotators", "tokenize,ssplit,pos");
-    StanfordCoreNLP pipeline = new StanfordCoreNLP(props);
     Annotation ann = new Annotation(description);
     pipeline.annotate(ann);
-
     return ann;
   }
 

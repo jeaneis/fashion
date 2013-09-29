@@ -11,3 +11,9 @@ data/cateProcessor.py
 data/vectorNN.tab.gz
 
 data/netaporter.tar.gz
+
+data/netaporter/*
+
+www/img_clothes
+
+data/images

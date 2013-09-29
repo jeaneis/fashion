@@ -6,7 +6,6 @@ import digicloset.colors.*;
 import edu.stanford.nlp.io.IOUtils;
 
 import java.awt.*;
-import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
@@ -33,6 +32,13 @@ public abstract class FashionItem implements Comparable<FashionItem> {
   public static final Map<Integer, FashionItem> idLookup = new HashMap<Integer, FashionItem>();
   private static final Index<String> featurizer = new HashIndex<String>();
   private static boolean featurizerPopulated = false;
+  private static final StanfordCoreNLP pipeline;
+
+  static {
+    Properties props = new Properties();
+    props.setProperty("annotators", "tokenize,ssplit,pos");
+    pipeline = new StanfordCoreNLP(props);
+  }
 
   public final int id;
   public final String metaDescription;
@@ -176,17 +182,41 @@ public abstract class FashionItem implements Comparable<FashionItem> {
   private static List<String> dresses = Arrays.asList("Jumpsuits", "Dresses");
   private static List<String> outerwear = Arrays.asList("Coats", "Jackets");
 
-  private static Parser parser = new Parser();
-
-
   public Set<String> toAdjectiveSet()
   {
-    return new HashSet<String>(parser.getAdjectives(description));
+    return new HashSet<String>(getAdjectives(description.toLowerCase()));
+  }
+
+  private Annotation annotateString(String description)
+  {
+    Annotation ann = new Annotation(description);
+    pipeline.annotate(ann);
+    return ann;
+  }
+
+  private List<String> getAdjectives(String description)
+  {
+    List<String> adjs = new ArrayList<String>();
+    Annotation ann = annotateString(description);
+    for (CoreLabel token : ann.get(CoreAnnotations.TokensAnnotation.class))
+    {
+//      System.out.println(token.tag());
+      if (token.tag().startsWith("J"))
+      {
+        adjs.add(token.tag());
+      }
+    }
+    return adjs;
   }
 
   public Set<String> toKeywordSet()
   {
-    return keywords;
+    Set<String> keySet = new HashSet<String>();
+    for (String s : keywords)
+    {
+      keySet.add(s.toLowerCase());
+    }
+    return keySet;
   }
 
   public double[] toVectorSpace() {
@@ -229,7 +259,7 @@ public abstract class FashionItem implements Comparable<FashionItem> {
   private static Set<String> getPathTokens(String[] tokens, String... toRemove) {
       Set<String> out = new HashSet<String>();
       for (String tok:tokens) {
-          Boolean exists = new File(tok).exists();
+          Boolean exists = new File(Props.DATA_IMAGE_DIR + File.separator + tok).exists();
           if (exists)
             out.add(tok);
       }
