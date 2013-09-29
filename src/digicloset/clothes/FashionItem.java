@@ -52,6 +52,8 @@ public abstract class FashionItem implements Comparable<FashionItem> {
   public final Set<String> keywords;
   public final String details;
 
+  public final double length;
+
   public final Set<Integer> shownWith;
   public final Set<Integer> recommended;
   public final Set<String> images;
@@ -77,6 +79,8 @@ public abstract class FashionItem implements Comparable<FashionItem> {
     this.recommended = recommended;
     this.images = images;
 
+    this.length = 0.0;
+
     try
     {
       BufferedImage image = ImageIO.read(new File(StandardImage()));
@@ -86,6 +90,38 @@ public abstract class FashionItem implements Comparable<FashionItem> {
     } catch (IOException e)
     {
         println("Error reading image");
+    }
+
+  }
+
+  public FashionItem(int id, String metaDescription, Set<String> metaKeywords, Set<String> categories, String brand, String name, double price, String color, String description, Set<String> keywords, String details, Set<Integer> shownWith, Set<Integer> recommended, Set<String> images,
+                     double length) {
+    this.id = id;
+    this.metaDescription = metaDescription;
+    this.metaKeywords = metaKeywords;
+    this.categories = categories;
+    this.brand = brand;
+    this.name = name;
+    this.price = price;
+    this.color = color;
+    this.description = description;
+    this.keywords = keywords;
+    this.details = details;
+    this.shownWith = shownWith;
+    this.recommended = recommended;
+    this.images = images;
+
+    this.length = length;
+
+    try
+    {
+      BufferedImage image = ImageIO.read(new File(StandardImage()));
+      this.bottomAttachmentPoint = new Point(image.getWidth()/2, image.getHeight());
+      this.topAttachmentPoint = new Point(image.getWidth()/2, 0);
+
+    } catch (IOException e)
+    {
+      println("Error reading image");
     }
 
   }
@@ -241,7 +277,11 @@ public abstract class FashionItem implements Comparable<FashionItem> {
   }
 
   private static String cleanToken(String input) {
-    return input.replaceAll("\\.", "").replaceAll(",", "").replaceAll("(\n|\r)+", "").replaceAll("\\s+", " ").trim();
+    return input.replaceAll("\\.", " ").replaceAll(",", " ").replaceAll("(\n|\r)+", "").replaceAll("\\s+", " ").trim();
+  }
+
+  private static String cleanParagraph(String input) {
+    return input.replaceAll("(\n|\r)+", "").replaceAll("\\s+", " ").trim();
   }
 
   private static Set<String> cleanTokens(String[] tokens, String... toRemove) {
@@ -301,6 +341,9 @@ public abstract class FashionItem implements Comparable<FashionItem> {
       Set<Integer> recommended = new HashSet<Integer>();
       Set<String> images = new HashSet<String>();
 
+      double length = 0.0;
+      int lengthIndex = -1;
+
       // Fill general fields
       for (String line : IOUtils.slurpFile(file).split("\n+")) {
         String[] fields = line.split("\\t");
@@ -314,12 +357,32 @@ public abstract class FashionItem implements Comparable<FashionItem> {
           price = Double.parseDouble(fields[1].substring(1).replaceAll(",", ""));
         }
         else if (key.equalsIgnoreCase("color")) { color = cleanToken(fields[1]); }
-        else if (key.equalsIgnoreCase("description")) { description = cleanToken(fields[1]); }
+        else if (key.equalsIgnoreCase("description")) { description = cleanParagraph(fields[1]); }
         else if (key.equalsIgnoreCase("keywords")) { keywords = cleanTokens(fields, "keywords"); }
         else if (key.equalsIgnoreCase("shownWith")) { shownWith = cleanTokensInt(fields, "shownWith"); }
         else if (key.equalsIgnoreCase("details")) { details = cleanToken(fields[1]); }
         else if (key.equalsIgnoreCase("recommended")) { recommended = cleanTokensInt(fields, "recommended"); }
         else if (key.equalsIgnoreCase("images")) { images = getPathTokens(fields, "images"); }
+        else if (key.equalsIgnoreCase("measurements.header")) {
+          for (int i = 1; i < fields.length; i++)
+          {
+            String field = fields[i];
+            if (field.equalsIgnoreCase("Length"))
+            {
+              lengthIndex = i;
+              break;
+            }
+          }
+        }
+        else if (key.equalsIgnoreCase("measurements.row.1")) {
+          if (lengthIndex != -1)
+          {
+            try {
+              length = Double.parseDouble(fields[lengthIndex]);
+            }
+            catch (Exception e) { }
+          }
+        }
       }
 
       if (images.size() == 0)
@@ -329,12 +392,28 @@ public abstract class FashionItem implements Comparable<FashionItem> {
       if (categories.contains("Clothing"))
       {
         if (isMember(categories, tops)) {
+          if (length > 0)
+          {
+            return (E) new Top(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images, length);
+          }
           return (E) new Top(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
         } else if (isMember(categories, bottoms)) {
+          if (length > 0)
+          {
+            return (E) new Top(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images, length);
+          }
           return (E) new Bottom(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
         } else if (isMember(categories, dresses)) {
+          if (length > 0)
+          {
+            return (E) new Top(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images, length);
+          }
           return (E) new Dress(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
         } else if (isMember(categories, outerwear)) {
+          if (length > 0)
+          {
+            return (E) new Top(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images, length);
+          }
           return (E) new Outerwear(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
         }
         else {
