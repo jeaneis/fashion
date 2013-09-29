@@ -7,3 +7,5 @@ out/
 .idea/libraries/lib.xml
 
 data/cateProcessor.py
+
+data/vectorNN.tab.gz

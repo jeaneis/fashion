@@ -14,6 +14,10 @@ import java.util.*;
 import java.util.List;
 import javax.imageio.ImageIO;
 
+import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.HashIndex;
 import edu.stanford.nlp.util.Index;
 
@@ -172,6 +176,14 @@ public abstract class FashionItem implements Comparable<FashionItem> {
   private static List<String> bottoms = Arrays.asList("Pants", "Jeans", "Shorts", "Skirts");
   private static List<String> dresses = Arrays.asList("Jumpsuits", "Dresses");
   private static List<String> outerwear = Arrays.asList("Coats", "Jackets");
+
+  private static Parser parser = new Parser();
+
+
+  public Set<String> toAdjectiveSet()
+  {
+    return new HashSet<String>(parser.getAdjectives(description));
+  }
 
   public double[] toVectorSpace() {
     // Ensure indexer is populated
