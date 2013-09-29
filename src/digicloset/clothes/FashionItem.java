@@ -184,7 +184,7 @@ public abstract class FashionItem implements Comparable<FashionItem> {
 
   public Set<String> toAdjectiveSet()
   {
-    return new HashSet<String>(getAdjectives(description.toLowerCase()));
+    return new HashSet<String>(getAdjectives(description));
   }
 
   private Annotation annotateString(String description)
@@ -203,7 +203,7 @@ public abstract class FashionItem implements Comparable<FashionItem> {
 //      System.out.println(token.tag());
       if (token.tag().startsWith("J"))
       {
-        adjs.add(token.tag());
+        adjs.add(token.tag().toLowerCase());
       }
     }
     return adjs;
@@ -334,6 +334,8 @@ public abstract class FashionItem implements Comparable<FashionItem> {
           return (E) new Bottom(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
         } else if (isMember(categories, dresses)) {
           return (E) new Dress(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
+        } else if (isMember(categories, outerwear)) {
+          return (E) new Outerwear(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
         }
         else {
           return null;
