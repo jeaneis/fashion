@@ -27,13 +27,15 @@ YUI().use("io-xdr", "json-parse", "json-stringify", "node", function(Y) {
 
   var getRecommendations = function(ids, callback) {
     var query = {
-      input:((typeof ids == "number") ? [ids] : ids),
+      input:((ids instanceof Array) ? ids : [ids]),
       start:0,
       count:10
     };
-    Y.io( "http://localhost:4242/recommend?data=" + encodeURIComponent(Y.JSON.stringify(query)), {
-      method: "GET", on: { success: function(id, o, a){ callback(Y.JSON.parse(o.responseText)); } }
-    });
+    Y.io( "http://localhost:4242/recommend?data=" + encodeURIComponent(Y.JSON.stringify(query)),
+      {method: "GET", on: { success: function(id, o, a){
+        Y.log(o.responseText);
+        callback(Y.JSON.parse(o.responseText)); } }
+      });
   }
 
   Y.one('#button_lookup_id').on('click', function () {
@@ -47,9 +49,9 @@ YUI().use("io-xdr", "json-parse", "json-stringify", "node", function(Y) {
         Y.one("#suggestions").setHTML('');
         for (i = 0; i < recs.length; ++i) {
           Y.one("#suggestions").append('' + recs[i].score +
-            ': <img src=/img_clothes/' + recs[i].id + '_in_pp.jpg/');
+            ': <img src="/img_clothes/' + recs[i].id + '_in_pp.jpg" width="300" height="200"/>');
         }
-      })
+      });
     });
   });
 
