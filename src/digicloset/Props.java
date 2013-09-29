@@ -47,6 +47,8 @@ public class Props {
   public static int SERVER_PORT  = 8000;//4242;
 
   @Option(name="data.info.dir", gloss="The directory with the info files")
+
+  public static File DATA_IMAGE_DIR = new File("data/images");
   public static File DATA_INFO_DIR  = new File("data/info");
   @Option(name="data.vectornn.file", gloss="The file where the recommended nearest neighbors live")
   public static File DATA_VECTORNN_FILE  = new File("data/vectorNN.tab.gz");

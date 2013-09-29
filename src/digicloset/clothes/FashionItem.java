@@ -1,12 +1,23 @@
 package digicloset.clothes;
 
 import digicloset.Props;
+import digicloset.colors.*;
+
 import edu.stanford.nlp.io.IOUtils;
 
+import java.awt.*;
+import java.awt.color.ColorSpace;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+import java.util.List;
+import javax.imageio.ImageIO;
 
+import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.util.HashIndex;
 import edu.stanford.nlp.util.Index;
 
@@ -39,8 +50,13 @@ public abstract class FashionItem implements Comparable<FashionItem> {
   public final Set<Integer> recommended;
   public final Set<String> images;
 
+  private Point topAttachmentPoint;
+  private Point bottomAttachmentPoint;
+  private static int defaultHeight=585;
+  private static int defaultWidth=390;
 
-  protected FashionItem(int id, String metaDescription, Set<String> metaKeywords, Set<String> categories, String brand, String name, double price, String color, String description, Set<String> keywords, String details, Set<Integer> shownWith, Set<Integer> recommended, Set<String> images) {
+
+  public FashionItem(int id, String metaDescription, Set<String> metaKeywords, Set<String> categories, String brand, String name, double price, String color, String description, Set<String> keywords, String details, Set<Integer> shownWith, Set<Integer> recommended, Set<String> images) {
     this.id = id;
     this.metaDescription = metaDescription;
     this.metaKeywords = metaKeywords;
@@ -55,6 +71,87 @@ public abstract class FashionItem implements Comparable<FashionItem> {
     this.shownWith = shownWith;
     this.recommended = recommended;
     this.images = images;
+
+    try
+    {
+      BufferedImage image = ImageIO.read(new File(StandardImage()));
+      this.bottomAttachmentPoint = new Point(image.getWidth()/2, image.getHeight());
+      this.topAttachmentPoint = new Point(image.getWidth()/2, 0);
+
+    } catch (IOException e)
+    {
+        println("Error reading image");
+    }
+
+  }
+
+  public Point getTopAttachmentPoint()
+  {
+      return this.topAttachmentPoint;
+  }
+
+  public Point getBottomAttachmentPoint()
+  {
+      return this.bottomAttachmentPoint;
+  }
+
+  protected void findTopAttachment()
+  {
+      try
+      {
+          BufferedImage image = ImageIO.read(new File(StandardImage()));
+          int x = image.getWidth()/2;
+          LAB white = new LAB(255,0,0);
+          for (int i=0; i<image.getHeight(); i++)
+          {
+              LAB lab = new LAB(new Color(image.getRGB(x, i)));
+              if (ColorUtils.SqDist(lab, white) > 5)
+              {
+                this.topAttachmentPoint = new Point(x,i);
+                break;
+              }
+          }
+      } catch (IOException e)
+      {
+          this.topAttachmentPoint = new Point(defaultWidth/2, 0);
+          println("Error reading image");
+      }
+  }
+
+  protected void findBottomAttachment()
+  {
+      try
+      {
+          BufferedImage image = ImageIO.read(new File(StandardImage()));
+          LAB white = new LAB(255,0,0);
+          int x = image.getWidth()/2;
+          for (int i=image.getHeight()-1; i>=0; i--)
+          {
+              LAB lab = new LAB(new Color(image.getRGB(x, i)));
+              if (ColorUtils.SqDist(lab, white) > 5)
+              {
+                  this.bottomAttachmentPoint = new Point(x,i);
+                  break;
+              }
+          }
+      } catch (IOException e)
+      {
+          this.bottomAttachmentPoint = new Point(defaultWidth/2, defaultHeight-1);
+          println("Error reading image "+StandardImage());
+      }
+  }
+
+  public String StandardImage()
+  {
+      //find the image containing _in_
+      for (String image:images)
+      {
+         if (image.contains("_in_pp"))
+             return Props.DATA_IMAGE_DIR.getPath() + File.separator + image;
+      }
+      String standard = Props.DATA_IMAGE_DIR.getPath() + File.separator + images.iterator().next();
+      println("No Standard image " + standard);
+      return  standard;
   }
 
   protected abstract int yPos();
@@ -79,6 +176,19 @@ public abstract class FashionItem implements Comparable<FashionItem> {
   private static List<String> bottoms = Arrays.asList("Pants", "Jeans", "Shorts", "Skirts");
   private static List<String> dresses = Arrays.asList("Jumpsuits", "Dresses");
   private static List<String> outerwear = Arrays.asList("Coats", "Jackets");
+
+  private static Parser parser = new Parser();
+
+
+  public Set<String> toAdjectiveSet()
+  {
+    return new HashSet<String>(parser.getAdjectives(description));
+  }
+
+  public Set<String> toKeywordSet()
+  {
+    return keywords;
+  }
 
   public double[] toVectorSpace() {
     // Ensure indexer is populated
@@ -115,6 +225,19 @@ public abstract class FashionItem implements Comparable<FashionItem> {
       out.remove(remove);
     }
     return out;
+  }
+
+  private static Set<String> getPathTokens(String[] tokens, String... toRemove) {
+      Set<String> out = new HashSet<String>();
+      for (String tok:tokens) {
+          Boolean exists = new File(tok).exists();
+          if (exists)
+            out.add(tok);
+      }
+      for (String remove : toRemove) {
+          out.remove(remove);
+      }
+      return out;
   }
 
   private static Set<Integer> cleanTokensInt(String[] tokens, String... toRemove) {
@@ -167,8 +290,11 @@ public abstract class FashionItem implements Comparable<FashionItem> {
         else if (key.equalsIgnoreCase("shownWith")) { shownWith = cleanTokensInt(fields, "shownWith"); }
         else if (key.equalsIgnoreCase("details")) { details = cleanToken(fields[1]); }
         else if (key.equalsIgnoreCase("recommended")) { recommended = cleanTokensInt(fields, "recommended"); }
-        else if (key.equalsIgnoreCase("images")) { images = cleanTokens(fields, "images"); }
+        else if (key.equalsIgnoreCase("images")) { images = getPathTokens(fields, "images"); }
       }
+
+      if (images.size() == 0)
+          return null;
 
       // Categorize
       if (categories.contains("Clothing"))

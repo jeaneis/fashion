@@ -3,6 +3,7 @@ package digicloset;
 import digicloset.clothes.FashionItem;
 import digicloset.handlers.SimilarClothesHandler;
 import digicloset.recommend.KNNRecommender;
+import digicloset.recommend.TextRecommender;
 import edu.stanford.nlp.util.Function;
 import org.goobs.net.WebServer;
 import org.goobs.net.WebServerHandler;
@@ -39,8 +40,9 @@ public class Server {
 
         forceTrack("Precomputing info");
         Map<Props.SERVICE, WebServerHandler> handlerOverride = new HashMap<Props.SERVICE, WebServerHandler>();
-        KNNRecommender knn = new KNNRecommender(FashionItem.idLookup.values());
-        handlerOverride.put(Props.SERVICE.RECOMMEND, new SimilarClothesHandler(knn));
+//        KNNRecommender knn = new KNNRecommender(FashionItem.idLookup.values());
+        TextRecommender tnn = new TextRecommender(FashionItem.idLookup.values(), true);
+        handlerOverride.put(Props.SERVICE.RECOMMEND, new SimilarClothesHandler(tnn));
         endTrack("Precomputing info");
 
         forceTrack("Starting Server");

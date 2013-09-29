@@ -5,9 +5,12 @@
     <content url="file://$MODULE_DIR$">
       <sourceFolder url="file://$MODULE_DIR$/src" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/data" />
+<<<<<<< HEAD
       <excludeFolder url="file://$MODULE_DIR$/models" />
+=======
+>>>>>>> e863bd5b49664d7f0404350074310bddfbd7c469
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="1.7" jdkType="JavaSDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="lib" level="project" />
     <orderEntry type="library" name="scala" level="project" />
