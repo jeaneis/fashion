@@ -31,11 +31,12 @@ public abstract class FashionItem {
   public final Set<String> keywords;
   public final String details;
 
-  private final Set<String> shownWith;
-  private final Set<String> recommended;
-  private final Set<String> images;
+  public final Set<Integer> shownWith;
+  public final Set<Integer> recommended;
+  public final Set<String> images;
 
-  protected FashionItem(int id, String metaDescription, Set<String> metaKeywords, Set<String> categories, String brand, String name, double price, String color, String description, Set<String> keywords, String details, Set<String> shownWith, Set<String> recommended, Set<String> images) {
+
+  protected FashionItem(int id, String metaDescription, Set<String> metaKeywords, Set<String> categories, String brand, String name, double price, String color, String description, Set<String> keywords, String details, Set<Integer> shownWith, Set<Integer> recommended, Set<String> images) {
     this.id = id;
     this.metaDescription = metaDescription;
     this.metaKeywords = metaKeywords;
@@ -62,11 +63,19 @@ public abstract class FashionItem {
   private static Set<String> cleanTokens(String[] tokens, String... toRemove) {
     Set<String> out = new HashSet<String>();
     for (String tok : tokens) {
-      out.add(cleanToken(tok));
+      String clean = cleanToken(tok);
+      if (!clean.equals("")) { out.add(clean); }
     }
     for (String remove : toRemove) {
       out.remove(remove);
     }
+    return out;
+  }
+
+  private static Set<Integer> cleanTokensInt(String[] tokens, String... toRemove) {
+    Set<Integer> out = new HashSet<Integer>();
+    Set<String> strings = cleanTokens(tokens, toRemove);
+    for (String str : strings) { out.add(Integer.parseInt(str)); }
     return out;
   }
 
@@ -91,8 +100,8 @@ public abstract class FashionItem {
       Set<String> keywords = new HashSet<String>();
       String details = "";
       // Private fields
-      Set<String> shownWith = new HashSet<String>();
-      Set<String> recommended = new HashSet<String>();
+      Set<Integer> shownWith = new HashSet<Integer>();
+      Set<Integer> recommended = new HashSet<Integer>();
       Set<String> images = new HashSet<String>();
 
       // Fill general fields
@@ -110,9 +119,9 @@ public abstract class FashionItem {
         else if (key.equalsIgnoreCase("color")) { color = fields[1]; }
         else if (key.equalsIgnoreCase("description")) { description = fields[1]; }
         else if (key.equalsIgnoreCase("keywords")) { keywords = cleanTokens(fields, "keywords"); }
-        else if (key.equalsIgnoreCase("shownWith")) { shownWith = cleanTokens(fields, "shownWith"); }
+        else if (key.equalsIgnoreCase("shownWith")) { shownWith = cleanTokensInt(fields, "shownWith"); }
         else if (key.equalsIgnoreCase("details")) { details = fields[1]; }
-        else if (key.equalsIgnoreCase("recommended")) { recommended = cleanTokens(fields, "recommended"); }
+        else if (key.equalsIgnoreCase("recommended")) { recommended = cleanTokensInt(fields, "recommended"); }
         else if (key.equalsIgnoreCase("images")) { images = cleanTokens(fields, "images"); }
       }
 
@@ -126,7 +135,7 @@ public abstract class FashionItem {
       } else if (categories.contains("Dresses")) {
         return (E) new Dress(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
       } else {
-        debug("unknown categories: " + StringUtils.join(categories, " ").replaceAll("\\s+", " "));
+//        debug("unknown categories: " + StringUtils.join(categories, " ").replaceAll("\\s+", " "));
         return null;
       }
     } catch (IOException e) {
@@ -136,6 +145,7 @@ public abstract class FashionItem {
 
   public static Map<Class, Set<FashionItem>> read() {
     // Read Items
+    forceTrack("Reading Files");
     HashMap<Class, Set<FashionItem>> items = new HashMap<Class, Set<FashionItem>>();
     for (File file : IOUtils.iterFilesRecursive(Props.DATA_INFO_DIR)) {
       FashionItem item = createOrNull(file.getPath());
@@ -145,6 +155,22 @@ public abstract class FashionItem {
         idLookup.put(item.id, item);
       }
     }
+    endTrack("Reading Files");
+    // Symmeterize Items
+    forceTrack("Symeterizing Items");
+    for (FashionItem item : idLookup.values()) {
+      Iterator<Integer> recommendedIter = item.recommended.iterator();
+      while (recommendedIter.hasNext()) {
+        int related = recommendedIter.next();
+        if (idLookup.containsKey(related)) { idLookup.get(related).recommended.add(item.id); } else { recommendedIter.remove(); }
+      }
+      Iterator<Integer> shownWithIter = item.shownWith.iterator();
+      while(shownWithIter.hasNext()) {
+        int shownWith = shownWithIter.next();
+        if (idLookup.containsKey(shownWith)) { idLookup.get(shownWith).shownWith.add(item.id); } else { shownWithIter.remove(); }
+      }
+    }
+    endTrack("Symeterizing Items");
     return items;
   }
 }
