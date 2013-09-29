@@ -38,7 +38,7 @@ public class Props {
   public static SERVICE[] SERVICE_ENABLE  = new SERVICE[0];
 
   @Option(name="server.port", gloss="The port to listen to requests from")
-  public static int SERVER_PORT  = 4242;
+  public static int SERVER_PORT  = 8000;//4242;
 
   private static void initializeAndValidate() {
     /* nothing yet */
