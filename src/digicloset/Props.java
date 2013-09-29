@@ -44,7 +44,8 @@ public class Props {
   public static int SERVER_PORT  = 8000;//4242;
 
   @Option(name="data.info.dir", gloss="The directory with the info files")
-  public static File DATA_INFO_DIR  = new File("/home/gabor/workspace/fashion/data/info");
+  public static File DATA_INFO_DIR  = new File("data/info");//new File("/home/gabor/workspace/fashion/data/info");
+  public static File DATA_IMAGE_DIR = new File("data/images");
 
   private static void initializeAndValidate() {
     if (!DATA_INFO_DIR.exists() || !DATA_INFO_DIR.isDirectory()) {
