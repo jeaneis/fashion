@@ -90,9 +90,11 @@ public class TextRecommender extends Recommender {
             double maxVal = Double.NEGATIVE_INFINITY;
             String maxWord = "";
             String sAdj = smallSet.iterator().next();
+            sAdj = sAdj.toLowerCase().replaceAll("-", " ");
 
             for (String bAdj : bigSet)
             {
+              bAdj = bAdj.toLowerCase().replaceAll("-", " ");
               double jaccard;
               try {
                 jaccard = model.sim(sAdj, bAdj).get().jaccard();
