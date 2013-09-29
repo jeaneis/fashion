@@ -3,6 +3,7 @@ package digicloset;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValue;
+import digicloset.handlers.FashionItemRequestHandler;
 import digicloset.handlers.PingRequestHandler;
 import digicloset.recommend.Recommender;
 import edu.stanford.nlp.util.Execution;
@@ -27,7 +28,9 @@ public class Props {
 
   public static enum SERVICE {
     PING(new PingRequestHandler(), "/ping"),
-    RECOMMEND(null, "/recommend");
+    RECOMMEND(null, "/recommend"),
+    LOOKUP_ITEM(new FashionItemRequestHandler(), "/lookup_item")
+    ;
 
     public final WebServerHandler handler;
     public final String path;

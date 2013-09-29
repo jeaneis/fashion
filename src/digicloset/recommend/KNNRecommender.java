@@ -48,10 +48,10 @@ public class KNNRecommender extends Recommender {
           neighbors.setCount(cand, jaccard);
         }
         nearestNeighbors.put(source, neighbors);
+        saveNN();
       }
       endTrack("Precomputing nearest neighbors");
     }
-    saveNN();
   }
 
   private void saveNN() {
@@ -105,7 +105,7 @@ public class KNNRecommender extends Recommender {
   /**
    * Compute the average NN similarity between the input items and a target.
    * @param input The input items of clothing.
-   * @return An iterator of nearest neightbors.
+   * @return An iterator of nearest neighbors.
    */
   @Override
   public Iterator<Pair<FashionItem, Double>> recommendFrom(FashionItem... input) {
