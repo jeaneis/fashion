@@ -28,20 +28,35 @@ public class TextRecommender extends Recommender {
 
   private Collection<FashionItem> items;
 
-  public TextRecommender(Collection<FashionItem> items)
+  public TextRecommender(Collection<FashionItem> items, boolean includeKeywords)
   {
-    DistSim model = DistSim.load("model/distsim.ser.gz");
+    DistSim model = DistSim.load("models/distsim.ser.gz");
 //    model.sim("dog", "cat").get().cos();
 
     this.items = items;
     forceTrack("Precomputing nearest neighbors");
     // Get vectors
     forceTrack("Computing vectors");
+    double weightKeyword = 2;
+    double weightAdj = 1;
+    double sumWeights = 0;
     Map<FashionItem, Set<String>> adjMap = new HashMap<FashionItem, Set<String>>();
+    Map<FashionItem, Set<String>> keywordMap = new HashMap<FashionItem, Set<String>>();
     for (FashionItem item : items) {
-      adjMap.put(item, item.toAdjectiveSet());
+      keywordMap.put(item, item.toKeywordSet());
+      if (includeKeywords)
+      {
+        Set<String> allWordSet = item.toAdjectiveSet();
+        allWordSet.addAll(item.toKeywordSet());
+        adjMap.put(item, allWordSet);
+      }
+      else
+      {
+        adjMap.put(item, item.toAdjectiveSet());
+      }
     }
     endTrack("Computing vectors");
+
     for (FashionItem source : adjMap.keySet()) {
       log("NN for " + source);
       Set<String> sourceAdjs = adjMap.get(source);
@@ -70,6 +85,7 @@ public class TextRecommender extends Recommender {
         for (int i = 0; i < smallSet.size(); i++)
         {
           double maxVal = Double.NEGATIVE_INFINITY;
+          String maxWord = "";
           String sAdj = smallSet.iterator().next();
 
           for (String bAdj : bigSet)
@@ -78,10 +94,38 @@ public class TextRecommender extends Recommender {
             if (jaccard > maxVal)
             {
               maxVal = jaccard;
+              maxWord = bAdj;
             }
           }
-//          maxSimVals[i] = maxVal;
-          sumMaxVals += maxVal;
+
+          if (includeKeywords) {
+            Set<String> smallKeySet;
+            Set<String> bigKeySet;
+            if (sourceAdjs.size() <= candAdjs.size())
+            {
+              smallKeySet = keywordMap.get(source);
+              bigKeySet = keywordMap.get(cand);
+            }
+            else
+            {
+              smallKeySet = keywordMap.get(cand);
+              bigKeySet = keywordMap.get(source);
+            }
+
+            if (bigKeySet.contains(maxWord) || smallKeySet.contains(sAdj))
+            {
+              sumMaxVals += weightKeyword * maxVal;
+              sumWeights += weightKeyword;
+            }
+            else {
+              sumMaxVals += weightAdj * maxVal;
+              sumWeights += weightAdj;
+            }
+          }
+          else {
+            // maxSimVals[i] = maxVal;
+            sumMaxVals += maxVal;
+          }
         }
 
         double val = 0;
@@ -94,6 +138,7 @@ public class TextRecommender extends Recommender {
       }
       nearestNeighbors.put(source, neighbors);
     }
+
     endTrack("Precomputing nearest neighbors");
   }
 

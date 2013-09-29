@@ -185,6 +185,11 @@ public abstract class FashionItem implements Comparable<FashionItem> {
     return new HashSet<String>(parser.getAdjectives(description));
   }
 
+  public Set<String> toKeywordSet()
+  {
+    return keywords;
+  }
+
   public double[] toVectorSpace() {
     // Ensure indexer is populated
     if (!featurizerPopulated) {

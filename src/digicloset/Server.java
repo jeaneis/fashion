@@ -41,7 +41,7 @@ public class Server {
         forceTrack("Precomputing info");
         Map<Props.SERVICE, WebServerHandler> handlerOverride = new HashMap<Props.SERVICE, WebServerHandler>();
 //        KNNRecommender knn = new KNNRecommender(FashionItem.idLookup.values());
-        TextRecommender tnn = new TextRecommender(FashionItem.idLookup.values());
+        TextRecommender tnn = new TextRecommender(FashionItem.idLookup.values(), true);
         handlerOverride.put(Props.SERVICE.RECOMMEND, new SimilarClothesHandler(tnn));
         endTrack("Precomputing info");
 

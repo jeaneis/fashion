@@ -24,8 +24,9 @@ public class Parser {
 
   LexicalizedParser lp = null;
 
-  public Parser(){    lp = LexicalizedParser.loadModel("edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz");
-    lp.setOptionFlags(new String[]{"-maxLength", "100", "-outputFormat", "penn"});
+  public Parser(){
+//    lp = LexicalizedParser.loadModel("edu/stanford/nlp/models/lexparser/englishPCFG.ser.gz");
+//    lp.setOptionFlags(new String[]{"-maxLength", "100", "-outputFormat", "penn"});
   }
 
   public Tree getParseTree(String sentence)
