@@ -45,6 +45,7 @@ public class ColorRater {
         double score = -10000;
         String userAgent = "";
         double favoritesScore = 0;
+        System.out.println("Rate Colors");
 
         try
         {
@@ -54,9 +55,20 @@ public class ColorRater {
             resizedImage.getGraphics().drawImage(resized, 0, 0, null);
             //ImageIO.write(resizedImage, "png", new File("resized.png"));
 
-            Color[] colors = ColorClustering.KMeans(resizedImage, 5, 5);
+            //cluster from the precomputed palette
+            int numColors = Props.PALETTE_K*items.size();
+            BufferedImage paletteImage = new BufferedImage(numColors,1,BufferedImage.TYPE_INT_RGB);
+            for (int i=0; i<items.size(); i++)
+            {
+                for (int c=0; c<Props.PALETTE_K; c++)
+                {
+                    paletteImage.setRGB(i*Props.PALETTE_K+c, 0, items.get(i).palette[c].getRGB());
+                }
+            }
+
+            Color[] colors = ColorClustering.KMeans(paletteImage, Props.PALETTE_K, 5);
             //ColorClustering.SaveColors(colors, "outfitPalette.png");
-            String[] palette = new String[5];
+            String[] palette = new String[Props.PALETTE_K];
             for(int i=0; i<colors.length; i++)
                 palette[i] = ColorUtils.ColorToHex(colors[i]).replace("#","");
 
@@ -85,8 +97,8 @@ public class ColorRater {
 
 
             int responseCode = con.getResponseCode();
-            System.out.println("\nSending 'GET' request to URL : " + url);
-            System.out.println("Response Code : " + responseCode);
+            //System.out.println("\nSending 'GET' request to URL : " + url);
+            //System.out.println("Response Code : " + responseCode);
 
             BufferedReader in = new BufferedReader(
                     new InputStreamReader(con.getInputStream()));
@@ -99,7 +111,7 @@ public class ColorRater {
             in.close();
 
             //print result
-            System.out.println(response.toString());
+            //System.out.println(response.toString());
             String responseString = response.toString();
             String[] fields = responseString.split(":");
             score = Double.parseDouble(fields[1].replace("}",""));
@@ -132,7 +144,7 @@ public class ColorRater {
         items.add(top);
         items.add(bottom);
 
-        FlickrImages favorites = new FlickrImages("Vic Powles", 5);
+        FlickrImages favorites = new FlickrImages("Vic Powles", Props.PALETTE_K);
 
 
         System.out.println(RateColors(items, favorites));
