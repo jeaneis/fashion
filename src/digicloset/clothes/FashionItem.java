@@ -449,15 +449,24 @@ public abstract class FashionItem implements Comparable<FashionItem> {
   public static Map<Class, Set<FashionItem>> read() {
     // Read Items
     forceTrack("Reading Files");
-    HashMap<Class, Set<FashionItem>> items = new HashMap<Class, Set<FashionItem>>();
-    for (File file : IOUtils.iterFilesRecursive(Props.DATA_INFO_DIR)) {
-      FashionItem item = createOrNull(file.getPath());
-      if (item != null) {
-        if (!items.containsKey(item.getClass())) { items.put(item.getClass(), new HashSet<FashionItem>()); }
-        items.get(item.getClass()).add(item);
-        idLookup.put(item.id, item);
-      }
+    final HashMap<Class, Set<FashionItem>> items = new HashMap<Class, Set<FashionItem>>();
+    List<Runnable> runnables = new ArrayList<Runnable>();
+    for (final File file : IOUtils.iterFilesRecursive(Props.DATA_INFO_DIR)) {
+      runnables.add(new Runnable() {
+        @Override
+        public void run() {
+          FashionItem item = createOrNull(file.getPath());
+          synchronized (this) {
+            if (item != null) {
+              if (!items.containsKey(item.getClass())) { items.put(item.getClass(), new HashSet<FashionItem>()); }
+              items.get(item.getClass()).add(item);
+                idLookup.put(item.id, item);
+            }
+          }
+        }
+      });
     }
+    threadAndRun(runnables);
     endTrack("Reading Files");
     // Symmeterize Items
     forceTrack("Symeterizing Items");

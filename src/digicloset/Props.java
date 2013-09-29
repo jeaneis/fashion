@@ -5,6 +5,7 @@ import com.typesafe.config.ConfigFactory;
 import com.typesafe.config.ConfigValue;
 import digicloset.handlers.FashionItemRequestHandler;
 import digicloset.handlers.PingRequestHandler;
+import digicloset.handlers.RandomItemHandler;
 import digicloset.recommend.Recommender;
 import digicloset.colors.*;
 import edu.stanford.nlp.util.Execution;
@@ -31,7 +32,8 @@ public class Props {
   public static enum SERVICE {
     PING(new PingRequestHandler(), "/ping"),
     RECOMMEND(null, "/recommend"),
-    LOOKUP_ITEM(new FashionItemRequestHandler(), "/lookup_item")
+    LOOKUP_ITEM(new FashionItemRequestHandler(), "/lookup_item"),
+    RANDOM_ITEM(new RandomItemHandler(), "/random_item")
     ;
 
     public final WebServerHandler handler;

@@ -24,7 +24,7 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.*;
  */
 public class Server {
 
-  private static Map<Class, Set<FashionItem>> inventory;
+  public static Map<Class, Set<FashionItem>> inventory;
 
   public static void main(String[] args) {
     Props.exec(new Function<Properties, Object>() {
