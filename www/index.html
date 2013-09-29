@@ -1,49 +1,19 @@
+<!DOCTYPE html>
 <html>
 <head>
-<script src="http://yui.yahooapis.com/3.12.0/build/yui/yui-min.js"></script>
-<script>
-// Create a YUI sandbox on your page.
-YUI().use('node', 'event', function (Y) {
-  // The Node and Event modules are loaded and ready to use.
-  // Your code goes here!
-});
-YUI().use("io-xdr", "json-parse", "node", function(Y) {
-  var handleStart = function(id, a) { };
-  var handleSuccess = function(id, o, a) {
-    Y.log("SUCCESS!");
-    Y.log(o);
-    var messages = Y.JSON.parse(o.responseText);
-    Y.log(messages);
-  };
-  var handleFailure = function(id, o, a) {
-    Y.log("FAILURE!");
-    Y.log(id);
-    Y.log(o);
-    Y.log(a);
-  };
-  var cfg = {
-      method: "GET",
-      on: {
-        start: handleStart,
-        success: handleSuccess,
-        failure: handleFailure
-      }
-    };
-  var obj = Y.io(
-      //this is a specific Pipes feed, populated with cycling news:
-      "http://localhost:4242/ping",
-      cfg
-    );
-});
-</script>
-<link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.3.0/pure-min.css">
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+	<title>Untitled</title>
+<!--Adobe Edge Runtime-->
+    <script type="text/javascript" charset="utf-8" src="FASHION%20SENSE_edgePreload.js"></script>
+    <style>
+        .edgeLoad-EDGE-2304136 { visibility:hidden; }
+    </style>
+<!--Adobe Edge Runtime End-->
+
 </head>
-<body>
-Yahoo, World!
-
-
-
-
-
+<body style="margin:0;padding:0;">
+	<div id="Stage" class="EDGE-2304136">
+	</div>
 </body>
 </html>

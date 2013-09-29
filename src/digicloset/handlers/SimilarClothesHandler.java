@@ -47,14 +47,14 @@ public class SimilarClothesHandler extends JsonHandler {
     if (!values.containsKey("input")) { return error("Expected { input: [ item_id* ], start: start_index, count: num_results"); }
     if (!values.containsKey("start")) { return error("Expected { input: [ item_id* ], start: start_index, count: num_results"); }
     if (!values.containsKey("count")) { return error("Expected { input: [ item_id* ], start: start_index, count: num_results"); }
-    List<Integer> input = (List<Integer>) values.get("input");
+    List<Object> input = (List<Object>) values.get("input");
     int start = (int) Double.parseDouble(values.get("start").toString());
     int count = (int) Double.parseDouble(values.get("count").toString());
 
     // Construct nearest neighbors
     FashionItem[] items = new FashionItem[input.size()];
     for (int i = 0; i < input.size(); ++i) {
-      items[i] = FashionItem.idLookup.get(input.get(i));
+      items[i] = FashionItem.idLookup.get((int) Double.parseDouble(input.get(i).toString()));
       if (items[i] == null) { error("could not find item: " + items[i]); }
     }
     Iterator<Pair<FashionItem,Double>> iter = recommender.recommendFrom(items);
