@@ -5,6 +5,7 @@ import digicloset.handlers.SimilarClothesHandler;
 import digicloset.recommend.JointRecommender;
 import digicloset.recommend.KNNRecommender;
 import digicloset.recommend.TextRecommender;
+import digicloset.recommend.ColorRecommender;
 import edu.stanford.nlp.util.Function;
 import org.goobs.net.WebServer;
 import org.goobs.net.WebServerHandler;
@@ -43,7 +44,8 @@ public class Server {
         Map<Props.SERVICE, WebServerHandler> handlerOverride = new HashMap<Props.SERVICE, WebServerHandler>();
         KNNRecommender knn = new KNNRecommender(FashionItem.idLookup.values());
         TextRecommender tnn = new TextRecommender(FashionItem.idLookup.values(), true);
-        handlerOverride.put(Props.SERVICE.RECOMMEND, new SimilarClothesHandler(new JointRecommender(knn, tnn)));
+        ColorRecommender colorRecommender = new ColorRecommender("Vic Powles", 5);
+        handlerOverride.put(Props.SERVICE.RECOMMEND, new SimilarClothesHandler(new JointRecommender(knn, tnn, colorRecommender)));
         endTrack("Precomputing info");
 
         forceTrack("Starting Server");

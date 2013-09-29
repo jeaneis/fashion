@@ -54,7 +54,7 @@ public class ColorRater {
             resizedImage.getGraphics().drawImage(resized, 0, 0, null);
             //ImageIO.write(resizedImage, "png", new File("resized.png"));
 
-            Color[] colors = ColorClustering.KMeans(resizedImage, 5, 5);
+            Color[] colors = ColorClustering.KMeans(resizedImage, Props.PALETTE_K, 5);
             //ColorClustering.SaveColors(colors, "outfitPalette.png");
             String[] palette = new String[Props.PALETTE_K];
             for(int i=0; i<colors.length; i++)
