@@ -201,9 +201,9 @@ public abstract class FashionItem implements Comparable<FashionItem> {
     for (CoreLabel token : ann.get(CoreAnnotations.TokensAnnotation.class))
     {
 //      System.out.println(token.tag());
-      if (token.tag().startsWith("J"))
+      if (token.tag().startsWith("JJ"))
       {
-        adjs.add(token.tag().toLowerCase());
+        adjs.add(token.tag().toLowerCase().replaceAll("-", ""));
       }
     }
     return adjs;
@@ -214,7 +214,7 @@ public abstract class FashionItem implements Comparable<FashionItem> {
     Set<String> keySet = new HashSet<String>();
     for (String s : keywords)
     {
-      keySet.add(s.toLowerCase());
+      keySet.add(s.toLowerCase().replaceAll("-", ""));
     }
     return keySet;
   }

@@ -51,7 +51,7 @@ public class OutfitStitcher {
 
     }
 
-    public static BufferedImage Stitch(ArrayList<FashionItem> items) throws IOException
+    public static BufferedImage Stitch(java.util.List<FashionItem> items) throws IOException
     {
         Collections.sort(items);
 

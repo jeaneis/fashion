@@ -2,18 +2,12 @@ package digicloset.recommend;
 
 import digicloset.Props;
 import digicloset.clothes.FashionItem;
-import edu.stanford.nlp.ling.CoreAnnotations;
-import edu.stanford.nlp.ling.CoreLabel;
-import edu.stanford.nlp.pipeline.Annotation;
-import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.stats.ClassicCounter;
 import edu.stanford.nlp.stats.Counter;
 import edu.stanford.nlp.stats.Counters;
 import edu.stanford.nlp.util.Pair;
 import org.goobs.sim.DistSim;
 
-import java.io.FileWriter;
-import java.io.IOException;
 import java.util.*;
 
 import static edu.stanford.nlp.util.logging.Redwood.Util.endTrack;
@@ -31,6 +25,72 @@ public class TextRecommender extends Recommender {
 
   public final HashMap<FashionItem, Counter<FashionItem>> nearestNeighbors = new HashMap<FashionItem, Counter<FashionItem>>();
 
+  public TextRecommender(Collection<FashionItem> items, boolean includeKeywords) {
+
+    if (!loadNN(Props.DATA_TEXTNN_FILE, this.nearestNeighbors)) {
+      DistSim model = DistSim.load("models/distsim.ser.gz");
+      Map<Pair<String,String>, Double> jaccardCache = new HashMap<Pair<String,String>, Double>();
+
+      forceTrack("Precomputing nearest neighbors");
+      // Compute Vectors
+      Map<FashionItem, Counter<String>> keywords = new HashMap<FashionItem, Counter<String>>();
+      for (FashionItem item : items) {
+        keywords.put(item, new ClassicCounter<String>());
+        Counters.addInPlace(keywords.get(item), item.toKeywordSet(), 2.0);
+        Counters.addInPlace(keywords.get(item), item.toAdjectiveSet(), 1.0);
+      }
+      // Compute Sim
+      for (FashionItem source : items) {
+        // Variables
+        log("NN for " + source);
+        Counter<String> a = keywords.get(source);
+        ClassicCounter<FashionItem> neighbors = new ClassicCounter<FashionItem>();
+        // For each candidate neighbor...
+        for (FashionItem cand : items) {
+          if (source == cand) { continue; }
+          Counter<String> b = keywords.get(cand);
+
+          // Compute the smaller of the two
+          Counter<String> smaller = a.size() < b.size() ? a : b;
+          Counter<String> larger = a.size() < b.size() ? b : a;
+          double sumJaccard = 0.0;
+          double sumWeight = 0.0;
+
+          // For each adjective in the smaller set...
+          for (Map.Entry<String, Double> adjA : smaller.entrySet()) {
+            sumWeight += adjA.getValue();
+            double maxJaccard = Double.NEGATIVE_INFINITY;
+            // For each adjective in the larger set...
+            for (String adjB : larger.keySet()) {
+              // Compute the new maximum similarity
+              Pair<String, String> key = Pair.makePair(adjA.getKey(), adjB);
+              if (jaccardCache.containsKey(key)) {
+                maxJaccard = Math.max( jaccardCache.get(key), maxJaccard );
+              } else {
+                try {
+                  double sim = model.sim(adjA.getKey(), adjB).get().jaccard();
+                  maxJaccard = Math.max(sim, maxJaccard);
+                  jaccardCache.put(key, sim);
+                } catch (NoSuchElementException e) { }
+              }
+            }
+            // Add that similarity to the sum (eventually an average)
+            sumJaccard += maxJaccard;
+          }
+          // Set average Jaccard similarity
+          if (sumWeight > 0) {
+            if (sumJaccard / sumWeight < 0 || sumJaccard / sumWeight > 1) { throw new IllegalStateException(sumJaccard + ", " + sumWeight); }
+            neighbors.setCount(cand, sumJaccard / sumWeight);
+          }
+        }
+        this.nearestNeighbors.put(source, neighbors);
+      }
+      saveNN(Props.DATA_TEXTNN_FILE, this.nearestNeighbors);
+      endTrack("Precomputing nearest neighbors");
+    }
+  }
+
+  /*
   public TextRecommender(Collection<FashionItem> items, boolean includeKeywords)
   {
     DistSim model = DistSim.load("models/distsim.ser.gz");
@@ -141,9 +201,15 @@ public class TextRecommender extends Recommender {
           double val = 0;
           if (smallSet.size() != 0)
           {
-            val = sumMaxVals / smallSet.size();
+            if (includeKeywords) {
+              val = sumMaxVals / sumWeights;
+            }
+            else {
+              val = sumMaxVals / smallSet.size();
+            }
           }
 
+          if (val < 0 || val > 1.0) { throw new IllegalStateException("Similarity was not between 0 and 1"); }
           neighbors.setCount(cand, val);
         }
         nearestNeighbors.put(source, neighbors);
@@ -152,6 +218,7 @@ public class TextRecommender extends Recommender {
       endTrack("Precomputing nearest neighbors");
     }
   }
+  */
 
 
 
@@ -170,9 +237,14 @@ public class TextRecommender extends Recommender {
     return Counters.toDescendingMagnitudeSortedListWithCounts(counts).iterator();
   }
 
-
-
-
-
+  @Override
+  public double score(FashionItem candidate, FashionItem... input) {
+    double score = 0.0;
+    Counter<FashionItem> nn = this.nearestNeighbors.get(candidate);
+    for (FashionItem anInput : input) {
+      score += nn.getCount(anInput);
+    }
+    return score / ((double) input.length);
+  }
 
 }

@@ -2,6 +2,7 @@ package digicloset;
 
 import digicloset.clothes.FashionItem;
 import digicloset.handlers.SimilarClothesHandler;
+import digicloset.recommend.JointRecommender;
 import digicloset.recommend.KNNRecommender;
 import digicloset.recommend.TextRecommender;
 import edu.stanford.nlp.util.Function;
@@ -42,7 +43,7 @@ public class Server {
         Map<Props.SERVICE, WebServerHandler> handlerOverride = new HashMap<Props.SERVICE, WebServerHandler>();
         KNNRecommender knn = new KNNRecommender(FashionItem.idLookup.values());
         TextRecommender tnn = new TextRecommender(FashionItem.idLookup.values(), true);
-        handlerOverride.put(Props.SERVICE.RECOMMEND, new SimilarClothesHandler(knn));
+        handlerOverride.put(Props.SERVICE.RECOMMEND, new SimilarClothesHandler(new JointRecommender(knn, tnn)));
         endTrack("Precomputing info");
 
         forceTrack("Starting Server");
