@@ -62,11 +62,15 @@ public class ColorRater {
             {
                 for (int c=0; c<Props.PALETTE_K; c++)
                 {
-                    paletteImage.setRGB(i*Props.PALETTE_K+c, 0, items.get(i).palette[c].getRGB());
+                    if (c < items.get(i).palette.length)
+                        paletteImage.setRGB(i*Props.PALETTE_K+c, 0, items.get(i).palette[c].getRGB());
+                    else
+                        paletteImage.setRGB(i*Props.PALETTE_K+c, 0, new Color(0,0,0,0).getRGB());
                 }
             }
 
             Color[] colors = ColorClustering.KMeans(paletteImage, Props.PALETTE_K, 5);
+
             //ColorClustering.SaveColors(colors, "outfitPalette.png");
             String[] palette = new String[Props.PALETTE_K];
             for(int i=0; i<colors.length; i++)
@@ -121,6 +125,7 @@ public class ColorRater {
 
         } catch (Exception e)
         {
+            e.printStackTrace();
         }
 
         return score + favoritesScore;
@@ -139,13 +144,12 @@ public class ColorRater {
         bottomImages.add("383334_in_pp.jpg");
 
         Top top = new Top(0, null, null, null, null, null, 0, null, null, null, null, null, null, topImages);
-        Bottom bottom = new Bottom(0, null, null, null, null, null, 0, null, null, null, null, null, null, bottomImages);
+        Bottom bottom = new Bottom(1, null, null, null, null, null, 0, null, null, null, null, null, null, bottomImages);
         ArrayList<FashionItem> items = new ArrayList<FashionItem>();
         items.add(top);
         items.add(bottom);
 
         FlickrImages favorites = new FlickrImages("Vic Powles", Props.PALETTE_K);
-
 
         System.out.println(RateColors(items, favorites));
 

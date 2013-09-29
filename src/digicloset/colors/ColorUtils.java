@@ -1,10 +1,12 @@
 package digicloset.colors;
 import digicloset.*;
+import edu.stanford.nlp.util.StringUtils;
 
 import java.awt.*;
 
 import java.awt.image.BufferedImage;
 import java.awt.Color;
+import java.util.ArrayList;
 import java.util.Random;
 import java.awt.Graphics;
 import javax.imageio.ImageIO;
@@ -19,6 +21,44 @@ import java.io.*;
  * To change this template use File | Settings | File Templates.
  */
 public class ColorUtils {
+
+    public static void SavePaletteText(Color[] colors, File file)
+    {
+        try {
+            FileWriter fs = new FileWriter(file);
+            for (int i=0; i<colors.length; i++)
+            {
+                String colorString = colors[i].getRed()+","+colors[i].getGreen()+","+colors[i].getBlue();
+                fs.write(colorString+"\n");
+            }
+            fs.close();
+        } catch (IOException e) {
+            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+        }
+
+    }
+
+    public static Color[] LoadPaletteText(File file)
+    {
+        ArrayList<Color> result = new ArrayList<Color>();
+        try{
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String currentLine;
+            while ((currentLine = br.readLine()) != null) {
+                String[] fields = StringUtils.splitOnChar(currentLine, ',');
+                if (fields.length < 3)
+                    continue;
+                Color color = new Color(Integer.parseInt(fields[0]), Integer.parseInt(fields[1]), Integer.parseInt(fields[2]));
+                result.add(color);
+            }
+            br.close();
+
+        } catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+        return result.toArray(new Color[result.size()]);
+    }
 
     public static double PaletteDist(LAB[] a, LAB[] b)
     {
