@@ -415,19 +415,19 @@ public abstract class FashionItem implements Comparable<FashionItem> {
         } else if (isMember(categories, bottoms)) {
           if (length > 0)
           {
-            return (E) new Top(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images, length);
+            return (E) new Bottom(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images, length);
           }
           return (E) new Bottom(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
         } else if (isMember(categories, dresses)) {
           if (length > 0)
           {
-            return (E) new Top(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images, length);
+            return (E) new Dress(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images, length);
           }
           return (E) new Dress(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
         } else if (isMember(categories, outerwear)) {
           if (length > 0)
           {
-            return (E) new Top(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images, length);
+            return (E) new Outerwear(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images, length);
           }
           return (E) new Outerwear(id, metaDescription, metaKeywords, categories, brand, name, price, color, description, keywords, details, shownWith, recommended, images);
         }
