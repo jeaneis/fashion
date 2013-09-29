@@ -17,7 +17,7 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.*;
  *
  * @author Gabor Angeli
  */
-public abstract class FashionItem {
+public abstract class FashionItem implements Comparable<FashionItem> {
 
   public static final Map<Integer, FashionItem> idLookup = new HashMap<Integer, FashionItem>();
   private static final Index<String> featurizer = new HashIndex<String>();
@@ -57,6 +57,8 @@ public abstract class FashionItem {
     this.images = images;
   }
 
+  protected abstract int yPos();
+
   private double[] relatedIndicator(int depth, double[] feats, double factor, Set<Integer> seen) {
     if (depth == 0 || seen.contains(this.id)) {
         return feats;
@@ -92,6 +94,11 @@ public abstract class FashionItem {
     // Create features
     double[] related = relatedIndicator(5, new double[featurizer.size()], 1.0, new HashSet<Integer>());
     return related;
+  }
+
+  @Override
+  public int compareTo(FashionItem other) {
+    return other.yPos() - this.yPos();
   }
 
   private static String cleanToken(String input) {
