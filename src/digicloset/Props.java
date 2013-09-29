@@ -59,9 +59,10 @@ public class Props {
   public static File DATA_VECTORNN_FILE  = new File("data/vectorNN.tab.gz");
   @Option(name="data.textnn.file", gloss="The file where the text-based nearest neighbors live")
   public static File DATA_TEXTNN_FILE  = new File("data/textNN.tab.gz");
+  @Option(name="data.palette.dir", gloss="The directory with the info files")
+  public static File DATA_PALETTE_DIR  = new File("data/palette");
 
   public static int PALETTE_K = 5;
-  public static File DATA_PALETTE_DIR = new File("data/palette");
 
   private static void initializeAndValidate() {
     if (!DATA_INFO_DIR.exists() || !DATA_INFO_DIR.isDirectory()) {
