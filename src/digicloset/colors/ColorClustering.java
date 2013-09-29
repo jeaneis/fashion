@@ -104,7 +104,7 @@ public class ColorClustering {
 
     private static double KMeansHelper(BufferedImage image, LAB[][] labImage, int k, Cluster[] seeds, Random random)
     {
-        int trials = 200;
+        int trials = 50;
         int width = image.getWidth();
         int height = image.getHeight();
 

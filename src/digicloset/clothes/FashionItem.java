@@ -82,23 +82,7 @@ public abstract class FashionItem implements Comparable<FashionItem> {
 
     this.length = 0.0;
 
-    try
-    {
-      BufferedImage image = ImageIO.read(new File(StandardImage()));
-      this.bottomAttachmentPoint = new Point(image.getWidth()/2, image.getHeight());
-      this.topAttachmentPoint = new Point(image.getWidth()/2, 0);
-
-      Image resize = OutfitStitcher.RemoveBackground(image).getScaledInstance(image.getWidth()/4, image.getHeight()/4, Image.SCALE_SMOOTH);
-      BufferedImage bResize = new BufferedImage(resize.getWidth(null), resize.getHeight(null), BufferedImage.TYPE_INT_ARGB);
-
-      bResize.getGraphics().drawImage(resize, 0, 0, null);
-
-      palette = ColorClustering.KMeans(bResize, Props.PALETTE_K, 5);
-
-    } catch (IOException e)
-    {
-        println("Error reading image");
-    }
+    computePaletteAndAttachments();
 
   }
 
@@ -121,25 +105,40 @@ public abstract class FashionItem implements Comparable<FashionItem> {
 
     this.length = length;
 
-    try
-    {
-      BufferedImage image = ImageIO.read(new File(StandardImage()));
-      this.bottomAttachmentPoint = new Point(image.getWidth()/2, image.getHeight());
-      this.topAttachmentPoint = new Point(image.getWidth()/2, 0);
+    computePaletteAndAttachments();
 
-        Image resize = OutfitStitcher.RemoveBackground(image).getScaledInstance(image.getWidth()/4, image.getHeight()/4, Image.SCALE_SMOOTH);
-        BufferedImage bResize = new BufferedImage(resize.getWidth(null), resize.getHeight(null), BufferedImage.TYPE_INT_ARGB);
-
-        bResize.getGraphics().drawImage(resize, 0, 0, null);
-
-        palette = ColorClustering.KMeans(bResize, Props.PALETTE_K, 5);
+  }
 
 
-    } catch (IOException e)
-    {
-      println("Error reading image");
-    }
+  public void computePaletteAndAttachments()
+  {
+      try
+      {
+          BufferedImage image = ImageIO.read(new File(StandardImage()));
+          this.bottomAttachmentPoint = new Point(image.getWidth()/2, image.getHeight());
+          this.topAttachmentPoint = new Point(image.getWidth()/2, 0);
 
+          File paletteFile = new File(Props.DATA_PALETTE_DIR.getPath() + File.separator + this.id+".palette");
+          if (paletteFile.exists())
+          {
+              palette = ColorUtils.LoadPaletteText(paletteFile);
+          } else
+          {
+              forceTrack("Computing palette");
+              Image resize = OutfitStitcher.RemoveBackground(image).getScaledInstance(image.getWidth()/4, image.getHeight()/4, Image.SCALE_SMOOTH);
+              BufferedImage bResize = new BufferedImage(resize.getWidth(null), resize.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+              bResize.getGraphics().drawImage(resize, 0, 0, null);
+
+
+              palette = ColorClustering.KMeans(bResize, Props.PALETTE_K, 1);
+              endTrack("Computing palette");
+              ColorUtils.SavePaletteText(palette, paletteFile);
+          }
+
+      } catch (IOException e)
+      {
+          println("Error reading image");
+      }
   }
 
   public Point getTopAttachmentPoint()
