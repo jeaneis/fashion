@@ -1,13 +1,18 @@
 package digicloset.recommend;
 
 import digicloset.clothes.FashionItem;
+import edu.stanford.nlp.kbp.slotfilling.common.Pointer;
 import edu.stanford.nlp.stats.ClassicCounter;
 import edu.stanford.nlp.stats.Counter;
 import edu.stanford.nlp.stats.Counters;
 import edu.stanford.nlp.util.Pair;
 
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
+
+import static edu.stanford.nlp.util.logging.Redwood.Util.threadAndRun;
 
 /**
  * Combine judgements from multiple fashion recommenders.
@@ -73,11 +78,28 @@ public class JointRecommender extends Recommender {
   }
 
   @Override
-  public double score(FashionItem candidate, FashionItem... input) {
-    double sumScore = 0.0;
-    for (Recommender component : this.components) {
-      sumScore += component.score(candidate, input);
+  public double score(final FashionItem candidate, final FashionItem... input) {
+    final Pointer<Double> sumScore = new Pointer<Double>(0.0);
+    final Pointer<Boolean> usedColor = new Pointer<Boolean>(false);
+    List<Runnable> toRun = new ArrayList<Runnable>();
+    for (final Recommender component : this.components) {
+      toRun.add(new Runnable() {
+        @Override
+        public void run() {
+          double incr = 0.0;
+          if (component instanceof ColorRecommender && new Random().nextInt(5) < 2) {
+            incr = component.score(candidate, input) * 5;
+            usedColor.set(true);
+          } else if ( !(component instanceof ColorRecommender)) {
+            incr = component.score(candidate, input);
+          }
+          synchronized (sumScore) {
+            sumScore.set(sumScore.dereference().get() + incr);
+          }
+        }
+      });
     }
-    return sumScore / ((double) this.components.length);
+    threadAndRun(toRun);
+    return sumScore.dereference().get() / ((double) (this.components.length + (usedColor.dereference().get() ? 4 : -1)));
   }
 }
