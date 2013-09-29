@@ -184,7 +184,7 @@ public abstract class FashionItem implements Comparable<FashionItem> {
 
   public Set<String> toAdjectiveSet()
   {
-    return new HashSet<String>(getAdjectives(description.toLowerCase()));
+    return new HashSet<String>(getAdjectives(description));
   }
 
   private Annotation annotateString(String description)
@@ -203,7 +203,7 @@ public abstract class FashionItem implements Comparable<FashionItem> {
 //      System.out.println(token.tag());
       if (token.tag().startsWith("J"))
       {
-        adjs.add(token.tag());
+        adjs.add(token.tag().toLowerCase());
       }
     }
     return adjs;
