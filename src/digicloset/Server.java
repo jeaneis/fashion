@@ -44,8 +44,9 @@ public class Server {
         Map<Props.SERVICE, WebServerHandler> handlerOverride = new HashMap<Props.SERVICE, WebServerHandler>();
         KNNRecommender knn = new KNNRecommender(FashionItem.idLookup.values());
         TextRecommender tnn = new TextRecommender(FashionItem.idLookup.values(), true);
-        ColorRecommender colorRecommender = new ColorRecommender("Vic Powles", 5);
-        handlerOverride.put(Props.SERVICE.RECOMMEND, new SimilarClothesHandler(new JointRecommender(knn, tnn, colorRecommender)));
+//        ColorRecommender colorRecommender = new ColorRecommender("Vic Powles", 5);
+//        handlerOverride.put(Props.SERVICE.RECOMMEND, new SimilarClothesHandler(new JointRecommender(knn, tnn, colorRecommender)));
+        handlerOverride.put(Props.SERVICE.RECOMMEND, new SimilarClothesHandler(new JointRecommender(knn, tnn)));
         endTrack("Precomputing info");
 
         forceTrack("Starting Server");

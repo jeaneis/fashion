@@ -17,7 +17,7 @@ import java.util.Random;
 public class JointRecommender extends Recommender {
 
   private final Recommender[] components;
-  private final int buffer = 3;
+  private final int buffer = 10;
 
   public JointRecommender(Recommender... components) {
     this.components = components;
