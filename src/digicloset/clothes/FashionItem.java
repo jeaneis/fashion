@@ -51,7 +51,6 @@ public abstract class FashionItem implements Comparable<FashionItem> {
   private static int defaultHeight=585;
   private static int defaultWidth=390;
 
-
   public FashionItem(int id, String metaDescription, Set<String> metaKeywords, Set<String> categories, String brand, String name, double price, String color, String description, Set<String> keywords, String details, Set<Integer> shownWith, Set<Integer> recommended, Set<String> images) {
     this.id = id;
     this.metaDescription = metaDescription;
@@ -97,7 +96,7 @@ public abstract class FashionItem implements Comparable<FashionItem> {
       {
           BufferedImage image = ImageIO.read(new File(StandardImage()));
           int x = image.getWidth()/2;
-          LAB white = new LAB(255,0,0);
+          LAB white = new LAB(100,0,0);
           for (int i=0; i<image.getHeight(); i++)
           {
               LAB lab = new LAB(new Color(image.getRGB(x, i)));
@@ -119,7 +118,7 @@ public abstract class FashionItem implements Comparable<FashionItem> {
       try
       {
           BufferedImage image = ImageIO.read(new File(StandardImage()));
-          LAB white = new LAB(255,0,0);
+          LAB white = new LAB(100,0,0);
           int x = image.getWidth()/2;
           for (int i=image.getHeight()-1; i>=0; i--)
           {
