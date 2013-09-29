@@ -179,7 +179,7 @@ public class ColorClustering {
 
     public static Color[] KMeans(BufferedImage image, int k, int tries)
     {
-        System.out.println("Starting KMeans");
+        //System.out.println("Starting KMeans");
 
         LAB[][] labImage = ConvertToLAB(image);
 
@@ -207,7 +207,7 @@ public class ColorClustering {
         }
 
 
-        System.out.println("Done with Kmeans");
+       // System.out.println("Done with Kmeans");
 
 
         return result;

@@ -22,7 +22,7 @@ import java.util.HashSet;
 //Create an outfit image to be rated
 public class OutfitStitcher {
 
-    private static BufferedImage RemoveBackground(BufferedImage image)
+    public static BufferedImage RemoveBackground(BufferedImage image)
     {
         //hacky, but just replace pure white with transparency
         ImageFilter filter = new RGBImageFilter() {

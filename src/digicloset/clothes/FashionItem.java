@@ -60,6 +60,7 @@ public abstract class FashionItem implements Comparable<FashionItem> {
   private Point bottomAttachmentPoint;
   private static int defaultHeight=585;
   private static int defaultWidth=390;
+  public Color[] palette;
 
   public FashionItem(int id, String metaDescription, Set<String> metaKeywords, Set<String> categories, String brand, String name, double price, String color, String description, Set<String> keywords, String details, Set<Integer> shownWith, Set<Integer> recommended, Set<String> images) {
     this.id = id;
@@ -82,6 +83,13 @@ public abstract class FashionItem implements Comparable<FashionItem> {
       BufferedImage image = ImageIO.read(new File(StandardImage()));
       this.bottomAttachmentPoint = new Point(image.getWidth()/2, image.getHeight());
       this.topAttachmentPoint = new Point(image.getWidth()/2, 0);
+
+      Image resize = OutfitStitcher.RemoveBackground(image).getScaledInstance(image.getWidth()/4, image.getHeight()/4, Image.SCALE_SMOOTH);
+      BufferedImage bResize = new BufferedImage(resize.getWidth(null), resize.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+
+      bResize.getGraphics().drawImage(resize, 0, 0, null);
+
+      palette = ColorClustering.KMeans(bResize, Props.PALETTE_K, 5);
 
     } catch (IOException e)
     {
