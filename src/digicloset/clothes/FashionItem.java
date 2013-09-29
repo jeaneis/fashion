@@ -127,6 +127,14 @@ public abstract class FashionItem implements Comparable<FashionItem> {
       this.bottomAttachmentPoint = new Point(image.getWidth()/2, image.getHeight());
       this.topAttachmentPoint = new Point(image.getWidth()/2, 0);
 
+        Image resize = OutfitStitcher.RemoveBackground(image).getScaledInstance(image.getWidth()/4, image.getHeight()/4, Image.SCALE_SMOOTH);
+        BufferedImage bResize = new BufferedImage(resize.getWidth(null), resize.getHeight(null), BufferedImage.TYPE_INT_ARGB);
+
+        bResize.getGraphics().drawImage(resize, 0, 0, null);
+
+        palette = ColorClustering.KMeans(bResize, Props.PALETTE_K, 5);
+
+
     } catch (IOException e)
     {
       println("Error reading image");
