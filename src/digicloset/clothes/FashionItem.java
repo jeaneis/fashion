@@ -2,11 +2,13 @@ package digicloset.clothes;
 
 import digicloset.Props;
 import edu.stanford.nlp.io.IOUtils;
-import edu.stanford.nlp.util.StringUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
+
+import edu.stanford.nlp.util.HashIndex;
+import edu.stanford.nlp.util.Index;
 
 import static edu.stanford.nlp.util.logging.Redwood.Util.*;
 
@@ -18,6 +20,8 @@ import static edu.stanford.nlp.util.logging.Redwood.Util.*;
 public abstract class FashionItem {
 
   public static final Map<Integer, FashionItem> idLookup = new HashMap<Integer, FashionItem>();
+  private static final Index<String> featurizer = new HashIndex<String>();
+  private static boolean featurizerPopulated = false;
 
   public final int id;
   public final String metaDescription;
@@ -53,11 +57,41 @@ public abstract class FashionItem {
     this.images = images;
   }
 
-  // Measurements
+  private double[] relatedIndicator(int depth, double[] feats, double factor, Set<Integer> seen) {
+    if (depth == 0 || seen.contains(this.id)) {
+        return feats;
+    } else {
+      seen.add(this.id);
+      for (int cooc : shownWith) {
+        feats[featurizer.indexOf("shownWith-" + cooc)] += factor;
+        idLookup.get(cooc).relatedIndicator(depth - 1, feats, factor / 2, seen);
+      }
+      for (int rec : recommended) {
+        feats[featurizer.indexOf("recommended-" + rec)] += factor;
+        idLookup.get(rec).relatedIndicator(depth - 1, feats, factor / 2, seen);
+      }
+      return feats;
+    }
+  }
 
+  public double[] toVectorSpace() {
+    // Ensure indexer is populated
+    if (!featurizerPopulated) {
+      startTrack("Populating indexer");
+      for (int id : idLookup.keySet()) {
+        featurizer.indexOf("shownWith-" + id, true);
+        featurizer.indexOf("recommended-" + id, true);
+      }
+      featurizerPopulated = true;
+      endTrack("Populating indexer");
+    }
+    // Create features
+    double[] related = relatedIndicator(5, new double[featurizer.size()], 1.0, new HashSet<Integer>());
+    return related;
+  }
 
   private static String cleanToken(String input) {
-    return input.replaceAll("\\.", "").replaceAll(",", "").replaceAll("\n+", "").replaceAll("\\s+", " ").trim();
+    return input.replaceAll("\\.", "").replaceAll(",", "").replaceAll("(\n|\r)+", "").replaceAll("\\s+", " ").trim();
   }
 
   private static Set<String> cleanTokens(String[] tokens, String... toRemove) {
@@ -108,19 +142,19 @@ public abstract class FashionItem {
       for (String line : IOUtils.slurpFile(file).split("\n+")) {
         String[] fields = line.split("\\t");
         String key = fields[0];
-        if (key.equalsIgnoreCase("meta-description")) { metaDescription = fields[1]; }
+        if (key.equalsIgnoreCase("meta-description")) { metaDescription = cleanToken(fields[1]); }
         else if (key.equalsIgnoreCase("meta-keywords")) { metaKeywords = cleanTokens(fields[1].split(" ")); }
         else if (key.equalsIgnoreCase("categories")) { categories = cleanTokens(fields, "categories"); }
-        else if (key.equalsIgnoreCase("brand")) { brand = fields[1]; }
-        else if (key.equalsIgnoreCase("name")) { name = fields[1]; }
+        else if (key.equalsIgnoreCase("brand")) { brand = cleanToken(fields[1]); }
+        else if (key.equalsIgnoreCase("name")) { name = cleanToken(fields[1]); }
         else if (key.equalsIgnoreCase("price")) {
           price = Double.parseDouble(fields[1].substring(1).replaceAll(",", ""));
         }
-        else if (key.equalsIgnoreCase("color")) { color = fields[1]; }
-        else if (key.equalsIgnoreCase("description")) { description = fields[1]; }
+        else if (key.equalsIgnoreCase("color")) { color = cleanToken(fields[1]); }
+        else if (key.equalsIgnoreCase("description")) { description = cleanToken(fields[1]); }
         else if (key.equalsIgnoreCase("keywords")) { keywords = cleanTokens(fields, "keywords"); }
         else if (key.equalsIgnoreCase("shownWith")) { shownWith = cleanTokensInt(fields, "shownWith"); }
-        else if (key.equalsIgnoreCase("details")) { details = fields[1]; }
+        else if (key.equalsIgnoreCase("details")) { details = cleanToken(fields[1]); }
         else if (key.equalsIgnoreCase("recommended")) { recommended = cleanTokensInt(fields, "recommended"); }
         else if (key.equalsIgnoreCase("images")) { images = cleanTokens(fields, "images"); }
       }
@@ -172,5 +206,26 @@ public abstract class FashionItem {
     }
     endTrack("Symeterizing Items");
     return items;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (!(o instanceof FashionItem)) return false;
+    FashionItem that = (FashionItem) o;
+    return id == that.id;
+  }
+
+  @Override
+  public int hashCode() {
+    return id;
+  }
+
+  @Override
+  public String toString() {
+    return "FashionItem{" +
+        "id=" + id +
+        ", name='" + name + '\'' +
+        '}';
   }
 }
