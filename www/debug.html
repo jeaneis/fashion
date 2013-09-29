@@ -20,7 +20,7 @@ YUI().use("io-xdr", "json-parse", "json-stringify", "node", function(Y) {
 */
 
   var getItem = function(id, callback) {
-    Y.io( "http://localhost:4242/lookup_item?id=" + id, {
+    Y.io( "http://localhost:4242/lookup_item?id=" + encodeURIComponent(id), {
       method: "GET", on: { success: function(id, o, a){ callback(Y.JSON.parse(o.responseText)); } }
     });
   }
@@ -31,7 +31,7 @@ YUI().use("io-xdr", "json-parse", "json-stringify", "node", function(Y) {
       start:0,
       count:10
     };
-    Y.io( "http://localhost:4242/recommend?data=" + Y.JSON.stringify(query), {
+    Y.io( "http://localhost:4242/recommend?data=" + encodeURIComponent(Y.JSON.stringify(query)), {
       method: "GET", on: { success: function(id, o, a){ callback(Y.JSON.parse(o.responseText)); } }
     });
   }

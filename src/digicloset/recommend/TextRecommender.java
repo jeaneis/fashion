@@ -1,6 +1,10 @@
 package digicloset.recommend;
 
 import digicloset.clothes.FashionItem;
+import edu.stanford.nlp.ling.CoreAnnotations;
+import edu.stanford.nlp.ling.CoreLabel;
+import edu.stanford.nlp.pipeline.Annotation;
+import edu.stanford.nlp.pipeline.StanfordCoreNLP;
 import edu.stanford.nlp.stats.ClassicCounter;
 import edu.stanford.nlp.stats.Counter;
 import edu.stanford.nlp.stats.Counters;
@@ -142,27 +146,7 @@ public class TextRecommender extends Recommender {
     endTrack("Precomputing nearest neighbors");
   }
 
-  private void saveNN() {
-    try {
-      FileWriter fw = new FileWriter("data/vectorNN.tab");
-    } catch (IOException e) {
-      throw new RuntimeException(e);
-    }
-  }
 
-  private boolean loadNN() {
-    return false;
-  }
-
-  private double jaccard(double[] a, double[] b) {
-    double numer = 0.0;
-    double denom = 0.0;
-    for (int i = 0; i < a.length; ++i) {
-      numer += (a[i] < b[i] ? a[i] : b[i]);
-      denom += (a[i] < b[i] ? b[i] : a[i]);
-    }
-    return numer / denom;
-  }
 
   /**
    * Compute the average NN similarity between the input items and a target.
