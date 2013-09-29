@@ -45,10 +45,10 @@ public class OutfitStitcher {
             }
         };
         ImageProducer ip = new FilteredImageSource(image.getSource(), filter);
-        //return Toolkit.getDefaultToolkit().createImage(ip);
         BufferedImage result = new BufferedImage(image.getWidth(), image.getHeight(), BufferedImage.TYPE_INT_ARGB);
         result.getGraphics().drawImage(Toolkit.getDefaultToolkit().createImage(ip), 0, 0, null);
         return result;
+
     }
 
     public static BufferedImage Stitch(ArrayList<FashionItem> items) throws IOException
@@ -64,7 +64,6 @@ public class OutfitStitcher {
         for (FashionItem item:items)
         {
             Point startPoint = new Point(prevPoint);
-            System.out.println(item.getTopAttachmentPoint().y);
             if (prev != null)
             {
                 startPoint.y += prev.getBottomAttachmentPoint().y-item.getTopAttachmentPoint().y;
@@ -84,9 +83,7 @@ public class OutfitStitcher {
         {
             BufferedImage image = ImageIO.read(new File(items.get(i).StandardImage()));
             image = RemoveBackground(image);
-
             graphics.drawImage(image, startPoints.get(i).x, startPoints.get(i).y, null);
-            ImageIO.write(result, "png", new File("intermediateImage"+i+".png"));
         }
 
 
@@ -97,7 +94,8 @@ public class OutfitStitcher {
     {
         System.out.println("Stitching images");
         HashSet<String> topImages = new HashSet<String>();
-        topImages.add("358979_in_pp.jpg");//"384011_in_pp.jpg");
+        //topImages.add("358979_in_pp.jpg");
+        topImages.add("384011_in_pp.jpg");
 
         HashSet<String> bottomImages = new HashSet<String>();
         bottomImages.add("383334_in_pp.jpg");
