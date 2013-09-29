@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 import static edu.stanford.nlp.util.logging.Redwood.Util.*;
@@ -48,8 +49,8 @@ public class KNNRecommender extends Recommender {
           neighbors.setCount(cand, jaccard);
         }
         nearestNeighbors.put(source, neighbors);
-        saveNN();
       }
+      saveNN();
       endTrack("Precomputing nearest neighbors");
     }
   }
@@ -73,7 +74,9 @@ public class KNNRecommender extends Recommender {
 
   private boolean loadNN() {
     try {
-      for (String line : IOUtils.slurpGZippedFile(Props.DATA_VECTORNN_FILE).trim().split("\n")) {
+      BufferedReader is = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(Props.DATA_VECTORNN_FILE))));
+      String line;
+      while ( (line = is.readLine()) != null ) {
         String[] fields = line.trim().split("\t");
         FashionItem source = FashionItem.idLookup.get(Integer.parseInt(fields[0]));
         Counter<FashionItem> counts = new ClassicCounter<FashionItem>();
@@ -109,11 +112,13 @@ public class KNNRecommender extends Recommender {
    */
   @Override
   public Iterator<Pair<FashionItem, Double>> recommendFrom(FashionItem... input) {
+    log("RECEIVE knn lookup");
     Counter<FashionItem> counts = new ClassicCounter<FashionItem>();
     for (FashionItem in : input) {
       Counters.addInPlace(counts, nearestNeighbors.get(in));
     }
     Counters.divideInPlace(counts, (double) input.length);
+    log("RESPOND knn lookup");
     return Counters.toDescendingMagnitudeSortedListWithCounts(counts).iterator();
   }
 }
